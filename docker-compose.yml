@@ -1,0 +1,65 @@
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.149.0
+    container_name: otel-collector
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "13133:13133" # Health check
+    volumes:
+      - ./otel-collector-config.yml:/etc/otelcol-contrib/config.yaml
+    depends_on:
+      loki:
+        condition: service_started
+      prometheus:
+        condition: service_started
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yml:/etc/loki/config.yaml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/config.yaml
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.11.1
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-remote-write-receiver"
+      - "--storage.tsdb.retention.time=15d"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:12.4.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+
+volumes:
+  loki-data:
+  prometheus-data:
+  grafana-data:
