@@ -15,6 +15,12 @@ processors:
     timeout: 5s
     send_batch_size: 1024
 
+  resource/default-user:
+    attributes:
+      - key: user_id
+        value: "unknown"
+        action: insert
+
 exporters:
   prometheusremotewrite:
     endpoint: http://prometheus:9090/api/v1/write
@@ -31,7 +37,7 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [batch]
+      processors: [resource/default-user, batch]
       exporters: [prometheusremotewrite]
     logs:
       receivers: [otlp]
