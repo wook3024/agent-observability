@@ -1,3 +1,5 @@
 .DS_Store
 .playwright-cli/
 backups/
+.specify/
+.claude/
