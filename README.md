@@ -74,19 +74,38 @@ docker compose down -v
 - "All" 선택 시 모든 사용자의 데이터를 통합 조회합니다.
 - 대시보드 간 이동 시 선택한 사용자 필터가 유지됩니다.
 
-## 애플리케이션 OTEL 환경변수
+## Claude Code OTEL 환경변수
 
-Claude Code 외의 애플리케이션에서 이 스택으로 텔레메트리를 보내려면 아래 환경변수를 설정합니다.
+Claude Code 텔레메트리를 이 스택으로 전송하기 위한 환경변수입니다. 셸 프로필(`~/.zshrc` 등)에 추가합니다.
 
 ```bash
-# OTLP 엔드포인트 (gRPC)
+# 엔드포인트 및 프로토콜
 export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
+export OTEL_EXPORTER_OTLP_PROTOCOL="grpc"
 
-# OTLP 엔드포인트 (HTTP, gRPC를 사용할 수 없는 환경)
-# export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"
+# Exporter 활성화 (logs/metrics만, traces 비활성)
+export OTEL_LOGS_EXPORTER="otlp"
+export OTEL_METRICS_EXPORTER="otlp"
+export OTEL_TRACES_EXPORTER="none"
 
-# 서비스 식별
-export OTEL_SERVICE_NAME="my-service"
+# Prometheus 호환 (cumulative temporality)
+export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE="cumulative"
+
+# 전송 주기 (ms)
+export OTEL_METRIC_EXPORT_INTERVAL="10000"
+export OTEL_LOGS_EXPORT_INTERVAL="5000"
+
+# 로그 상세 수준 (프롬프트 내용 및 도구 실행 상세)
+export OTEL_LOG_USER_PROMPTS="1"
+export OTEL_LOG_TOOL_DETAILS="1"
+
+# 메트릭에 계정/세션/버전 정보 포함
+export OTEL_METRICS_INCLUDE_ACCOUNT_UUID="true"
+export OTEL_METRICS_INCLUDE_SESSION_ID="true"
+export OTEL_METRICS_INCLUDE_VERSION="true"
+
+# 리소스 속성 (조직 구분용, 선택)
+export OTEL_RESOURCE_ATTRIBUTES="department=personal,team.id=solo"
 ```
 
 ## 접속 주소
