@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.shinukyi.agent-observability.compose</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/shinukyi/Gallary/projects/proto/agent-observability/scripts/start-compose.sh</string>
+  </array>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/shinukyi/Gallary/projects/proto/agent-observability</string>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/agent-observability-launchd.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/tmp/agent-observability-launchd.err</string>
+</dict>
+</plist>
