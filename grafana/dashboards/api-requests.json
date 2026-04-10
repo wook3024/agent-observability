@@ -18,28 +18,36 @@
       "url": "/d/cc-overview",
       "type": "link",
       "icon": "external link",
-      "targetBlank": false
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
     },
     {
       "title": "Tool Analytics",
       "url": "/d/cc-tool-analytics",
       "type": "link",
       "icon": "external link",
-      "targetBlank": false
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
     },
     {
       "title": "Events Explorer",
       "url": "/d/cc-events-explorer",
       "type": "link",
       "icon": "external link",
-      "targetBlank": false
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
     },
     {
       "title": "Prompt Analytics",
       "url": "/d/cc-prompt-analytics",
       "type": "link",
       "icon": "external link",
-      "targetBlank": false
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
     }
   ],
   "panels": [
@@ -70,7 +78,7 @@
       },
       "targets": [
         {
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name = `api_request` [$__range]))",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` [$__range]))",
           "refId": "A"
         }
       ],
@@ -112,7 +120,7 @@
       },
       "targets": [
         {
-          "expr": "avg(avg_over_time({service_name=\"claude-code\"} | event_name = `api_request` | unwrap cost_usd [$__range]))",
+          "expr": "avg(avg_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | unwrap cost_usd [$__range]))",
           "instant": true,
           "refId": "A"
         }
@@ -155,7 +163,7 @@
       },
       "targets": [
         {
-          "expr": "avg(avg_over_time({service_name=\"claude-code\"} | event_name = `api_request` | unwrap duration_ms [$__range]))",
+          "expr": "avg(avg_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | unwrap duration_ms [$__range]))",
           "instant": true,
           "refId": "A"
         }
@@ -198,7 +206,7 @@
       },
       "targets": [
         {
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name = `api_request` | unwrap cache_read_tokens [$__range]))",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | unwrap cache_read_tokens [$__range]))",
           "refId": "A"
         }
       ],
@@ -251,7 +259,7 @@
       },
       "targets": [
         {
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name = `api_request` [5m]))",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` [5m]))",
           "legendFormat": "requests",
           "refId": "A"
         }
@@ -303,7 +311,7 @@
       },
       "targets": [
         {
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name = `api_request` | unwrap cost_usd [5m]))",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | unwrap cost_usd [5m]))",
           "legendFormat": "cost",
           "refId": "A"
         }
@@ -367,7 +375,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (speed) (count_over_time({service_name=\"claude-code\"} | event_name = `api_request` [$__range]))",
+          "expr": "sum by (speed) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` [$__range]))",
           "legendFormat": "{{speed}}",
           "refId": "A"
         }
@@ -408,7 +416,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name = `api_request` | unwrap input_tokens [$__range]))",
+          "expr": "sum by (model) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | unwrap input_tokens [$__range]))",
           "legendFormat": "{{model}}",
           "refId": "A"
         }
@@ -467,7 +475,7 @@
       },
       "targets": [
         {
-          "expr": "{service_name=\"claude-code\"} | event_name = `api_request`",
+          "expr": "{service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request`",
           "refId": "A"
         }
       ],
@@ -677,5 +685,28 @@
         }
       ]
     }
-  ]
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "user_email",
+        "label": "User",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(claude_code_session_count_total, user_email)",
+        "query": "label_values(claude_code_session_count_total, user_email)",
+        "refresh": 1,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "hide": 0,
+        "current": {},
+        "options": []
+      }
+    ]
+  }
 }
