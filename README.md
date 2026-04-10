@@ -67,39 +67,16 @@ docker compose down -v
 
 ## 사용자별 대시보드 필터링
 
-모든 Grafana 대시보드에는 **User** 드롭다운이 포함되어 있어, 특정 사용자의 데이터만 필터링하여 조회할 수 있습니다.
+모든 Grafana 대시보드에는 **User** 드롭다운이 포함되어 있어, 특정 사용자의 이메일 기준으로 데이터를 필터링할 수 있습니다.
 
-이 기능이 동작하려면 OTLP 클라이언트(SDK)에서 텔레메트리 데이터를 전송할 때 `user_id` resource attribute를 포함해야 합니다.
-
-### OTLP 클라이언트 설정 예시
-
-**Python (OpenTelemetry SDK)**:
-
-```python
-from opentelemetry.sdk.resources import Resource
-
-resource = Resource.create({
-    "service.name": "claude-code",
-    "user_id": "alice"  # 사용자 식별자
-})
-```
-
-**Node.js (OpenTelemetry SDK)**:
-
-```javascript
-const { Resource } = require('@opentelemetry/resources');
-
-const resource = new Resource({
-  'service.name': 'claude-code',
-  'user_id': 'alice',  // 사용자 식별자
-});
-```
-
-`user_id`가 포함되지 않은 데이터는 OTEL Collector에서 자동으로 `"unknown"`으로 설정됩니다. 대시보드에서 "All" 옵션을 선택하면 모든 사용자의 데이터를 통합하여 조회할 수 있습니다.
+- 사용자 목록은 Prometheus의 `user_email` 레이블에서 동적으로 조회됩니다.
+- Claude Code SDK가 텔레메트리 전송 시 `user_email`을 자동으로 포함하므로 별도 설정이 필요 없습니다.
+- "All" 선택 시 모든 사용자의 데이터를 통합 조회합니다.
+- 대시보드 간 이동 시 선택한 사용자 필터가 유지됩니다.
 
 ## 애플리케이션 OTEL 환경변수
 
-이 스택으로 텔레메트리를 보내려면 애플리케이션에 아래 환경변수를 설정합니다.
+Claude Code 외의 애플리케이션에서 이 스택으로 텔레메트리를 보내려면 아래 환경변수를 설정합니다.
 
 ```bash
 # OTLP 엔드포인트 (gRPC)
@@ -110,12 +87,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
 
 # 서비스 식별
 export OTEL_SERVICE_NAME="my-service"
-
-# 리소스 속성 (user_id 등 커스텀 속성 추가)
-export OTEL_RESOURCE_ATTRIBUTES="user_id=alice,deployment.environment=local"
 ```
-
-> `user_id` 속성을 보내지 않으면 Collector가 자동으로 `unknown`을 삽입합니다.
 
 ## 접속 주소
 
