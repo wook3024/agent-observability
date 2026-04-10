@@ -32,6 +32,11 @@ exporters:
     tls:
       insecure: true
 
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
 service:
   extensions: [health_check]
   pipelines:
@@ -39,6 +44,10 @@ service:
       receivers: [otlp]
       processors: [resource/default-user, batch]
       exporters: [prometheusremotewrite]
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/tempo]
     logs:
       receivers: [otlp]
       processors: [batch]

@@ -15,6 +15,7 @@
 - `otel/opentelemetry-collector-contrib:0.149.0`
 - `grafana/loki:3.0.0`
 - `prom/prometheus:v3.11.1`
+- `grafana/tempo:2.7.2`
 - `grafana/grafana:12.4.2`
 
 위 버전 조합으로 실제 `docker compose up -d` 기동 검증을 완료했습니다.
@@ -28,6 +29,7 @@
   - `3100` Loki
   - `4317` OTLP gRPC
   - `4318` OTLP HTTP
+  - `3200` Tempo
   - `9090` Prometheus
   - `13133` OTEL Collector health check
 
@@ -76,42 +78,52 @@ docker compose down -v
 
 ## Claude Code OTEL 환경변수
 
-Claude Code 텔레메트리를 이 스택으로 전송하기 위한 환경변수입니다. 셸 프로필(`~/.zshrc` 등)에 추가합니다.
+Claude Code 텔레메트리를 이 스택으로 전송하기 위한 환경변수입니다. `~/.claude/settings.json` 파일의 `env` 블록에 추가합니다.
 
-```bash
-# 엔드포인트 및 프로토콜
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
-export OTEL_EXPORTER_OTLP_PROTOCOL="grpc"
+```json
+{
+  "env": {
+    // 텔레메트리 활성화
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
 
-# Exporter 활성화 (logs/metrics만, traces 비활성)
-export OTEL_LOGS_EXPORTER="otlp"
-export OTEL_METRICS_EXPORTER="otlp"
-export OTEL_TRACES_EXPORTER="none"
+    // Exporter 활성화 (logs/metrics/traces)
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_TRACES_EXPORTER": "otlp",
 
-# Prometheus 호환 (cumulative temporality)
-export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE="cumulative"
+    // 엔드포인트 및 프로토콜
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
 
-# 전송 주기 (ms)
-export OTEL_METRIC_EXPORT_INTERVAL="10000"
-export OTEL_LOGS_EXPORT_INTERVAL="5000"
+    // 전송 주기 (ms)
+    "OTEL_METRIC_EXPORT_INTERVAL": "10000",
+    "OTEL_LOGS_EXPORT_INTERVAL": "5000",
 
-# 로그 상세 수준 (프롬프트 내용 및 도구 실행 상세)
-export OTEL_LOG_USER_PROMPTS="1"
-export OTEL_LOG_TOOL_DETAILS="1"
+    // Prometheus 호환 (cumulative temporality)
+    "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "cumulative",
 
-# 메트릭에 계정/세션/버전 정보 포함
-export OTEL_METRICS_INCLUDE_ACCOUNT_UUID="true"
-export OTEL_METRICS_INCLUDE_SESSION_ID="true"
-export OTEL_METRICS_INCLUDE_VERSION="true"
+    // 로그 상세 수준 (프롬프트 내용 및 도구 실행 상세)
+    "OTEL_LOG_USER_PROMPTS": "1",
+    "OTEL_LOG_TOOL_DETAILS": "1",
 
-# 리소스 속성 (조직 구분용, 선택)
-export OTEL_RESOURCE_ATTRIBUTES="department=personal,team.id=solo"
+    // 메트릭에 계정/세션/버전 정보 포함
+    "OTEL_METRICS_INCLUDE_SESSION_ID": "true",
+    "OTEL_METRICS_INCLUDE_VERSION": "true",
+    "OTEL_METRICS_INCLUDE_ACCOUNT_UUID": "true",
+
+    // 리소스 속성 (조직 구분용, 선택)
+    "OTEL_RESOURCE_ATTRIBUTES": "department=personal,team.id=solo"
+  }
+}
 ```
+
+> `CLAUDE_CODE_ENABLE_TELEMETRY`를 `"1"`로 설정해야 텔레메트리가 활성화됩니다. 이 값이 없으면 나머지 OTEL 환경변수를 설정해도 데이터가 전송되지 않습니다.
 
 ## 접속 주소
 
 - Grafana: `http://localhost:3000`
 - Prometheus: `http://localhost:9090`
+- Tempo: `http://localhost:3200`
 - Loki API: `http://localhost:3100`
 - OTLP gRPC: `localhost:4317`
 - OTLP HTTP: `http://localhost:4318`

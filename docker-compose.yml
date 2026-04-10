@@ -13,6 +13,8 @@ services:
         condition: service_started
       prometheus:
         condition: service_started
+      tempo:
+        condition: service_started
     restart: unless-stopped
 
   loki:
@@ -40,6 +42,17 @@ services:
       - "--storage.tsdb.retention.time=15d"
     restart: unless-stopped
 
+  tempo:
+    image: grafana/tempo:2.7.2
+    container_name: tempo
+    ports:
+      - "3200:3200"
+    volumes:
+      - ./tempo-config.yml:/etc/tempo/config.yaml
+      - tempo-data:/var/tempo
+    command: -config.file=/etc/tempo/config.yaml
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana:12.4.2
     container_name: grafana
@@ -57,9 +70,11 @@ services:
     depends_on:
       - prometheus
       - loki
+      - tempo
     restart: unless-stopped
 
 volumes:
   loki-data:
   prometheus-data:
+  tempo-data:
   grafana-data:
