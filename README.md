@@ -57,58 +57,13 @@ docker compose down
 docker compose down -v
 ```
 
-## macOS 로그인 후 자동 실행
+## 자동 실행
 
-이 저장소에는 Docker Desktop이 로그인 시 자동 시작된 뒤, observability stack을 다시 올리는 용도의 파일이 포함되어 있습니다.
+모든 서비스에 `restart: unless-stopped` 정책이 설정되어 있습니다. OrbStack(또는 Docker Desktop)이 시작되면 컨테이너가 자동으로 함께 올라옵니다.
 
-- 스크립트: `scripts/start-compose.sh`
-- launchd plist: `launchd/com.shinukyi.agent-observability.compose.plist`
+최초 1회만 `docker compose up -d`로 실행하면, 이후에는 OrbStack 재시작 시 별도 명령 없이 자동 복구됩니다.
 
-동작 방식:
-
-1. 로그인 후 Docker Desktop이 실행됩니다.
-2. `start-compose.sh`가 `docker info`가 응답할 때까지 최대 6분 대기합니다.
-3. 준비가 끝나면 프로젝트 루트에서 `docker compose up -d`를 실행합니다.
-
-주의:
-
-- 이 스크립트는 `docker context show` 기준의 현재 Docker 컨텍스트를 그대로 사용합니다.
-- 지금 이 환경에서는 기본 컨텍스트가 `orbstack`으로 확인되었습니다.
-- Docker Desktop 기준으로 올리고 싶다면 미리 `docker context use desktop-linux`처럼 원하는 컨텍스트를 기본값으로 맞춰두는 것이 안전합니다.
-
-설치:
-
-```bash
-chmod +x /Users/shinukyi/Gallary/projects/proto/agent-observability/scripts/start-compose.sh
-mkdir -p ~/Library/LaunchAgents
-cp /Users/shinukyi/Gallary/projects/proto/agent-observability/launchd/com.shinukyi.agent-observability.compose.plist \
-  ~/Library/LaunchAgents/com.shinukyi.agent-observability.compose.plist
-launchctl bootout "gui/$(id -u)" ~/Library/LaunchAgents/com.shinukyi.agent-observability.compose.plist 2>/dev/null || true
-launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.shinukyi.agent-observability.compose.plist
-launchctl enable "gui/$(id -u)/com.shinukyi.agent-observability.compose"
-launchctl kickstart -k "gui/$(id -u)/com.shinukyi.agent-observability.compose"
-```
-
-상태 확인:
-
-```bash
-launchctl print "gui/$(id -u)/com.shinukyi.agent-observability.compose"
-docker compose ps
-```
-
-로그 확인:
-
-```bash
-tail -f /tmp/agent-observability-launchd.log
-tail -f /tmp/agent-observability-launchd.err
-```
-
-해제:
-
-```bash
-launchctl bootout "gui/$(id -u)" ~/Library/LaunchAgents/com.shinukyi.agent-observability.compose.plist
-rm ~/Library/LaunchAgents/com.shinukyi.agent-observability.compose.plist
-```
+수동으로 `docker compose down`을 실행한 경우에는 다시 `docker compose up -d`가 필요합니다.
 
 ## 사용자별 대시보드 필터링
 
