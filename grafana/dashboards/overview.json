@@ -54,6 +54,15 @@
       "targetBlank": false,
       "keepTime": true,
       "includeVars": true
+    },
+    {
+      "title": "Trace Explorer",
+      "url": "/d/cc-trace-explorer",
+      "type": "link",
+      "icon": "external link",
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
     }
   ],
   "panels": [
@@ -123,7 +132,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum(claude_code_session_count_total{user_email=~\"$user_email\"})",
+          "expr": "sum(max_over_time(claude_code_session_count_total{user_email=~\"$user_email\"}[$__range])) or vector(0)",
           "refId": "A"
         }
       ]
@@ -189,7 +198,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum(claude_code_cost_usage_USD_total{user_email=~\"$user_email\"})",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total{user_email=~\"$user_email\"}[$__range])) or vector(0)",
           "refId": "A"
         }
       ]
@@ -248,7 +257,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum(claude_code_token_usage_tokens_total{user_email=~\"$user_email\"})",
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{user_email=~\"$user_email\"}[$__range])) or vector(0)",
           "refId": "A"
         }
       ]
@@ -307,7 +316,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum(claude_code_active_time_seconds_total{user_email=~\"$user_email\"})",
+          "expr": "sum(increase(claude_code_active_time_seconds_total{user_email=~\"$user_email\"}[$__range])) or vector(0)",
           "refId": "A"
         }
       ]
@@ -675,7 +684,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum by (type) (claude_code_lines_of_code_count_total{user_email=~\"$user_email\"})",
+          "expr": "sum by (type) (increase(claude_code_lines_of_code_count_total{user_email=~\"$user_email\"}[$__range]))",
           "legendFormat": "{{type}}",
           "refId": "A"
         }
@@ -735,7 +744,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum(claude_code_commit_count_total{user_email=~\"$user_email\"}) or vector(0)",
+          "expr": "sum(increase(claude_code_commit_count_total{user_email=~\"$user_email\"}[$__range])) or vector(0)",
           "refId": "A"
         }
       ]
@@ -794,7 +803,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum(claude_code_pull_request_count_total{user_email=~\"$user_email\"}) or vector(0)",
+          "expr": "sum(increase(claude_code_pull_request_count_total{user_email=~\"$user_email\"}[$__range])) or vector(0)",
           "refId": "A"
         }
       ]
@@ -820,7 +829,7 @@
         "query": "label_values(claude_code_session_count_total, user_email)",
         "refresh": 1,
         "sort": 1,
-        "includeAll": true,
+        "includeAll": false,
         "allValue": ".*",
         "multi": false,
         "hide": 0,

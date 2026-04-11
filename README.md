@@ -1,7 +1,7 @@
 # Observability Stack
 
 이 폴더는 Docker Compose로 실행하는 로컬 observability 스택입니다.
-구성 요소는 OpenTelemetry Collector, Loki, Prometheus, Grafana입니다.
+구성 요소는 OpenTelemetry Collector, Loki, Prometheus, Tempo, Grafana입니다.
 
 ## 포함 범위
 
@@ -67,14 +67,29 @@ docker compose down -v
 
 수동으로 `docker compose down`을 실행한 경우에는 다시 `docker compose up -d`가 필요합니다.
 
+## Grafana 대시보드
+
+| 대시보드 | UID | 설명 |
+|----------|-----|------|
+| Overview | `cc-overview` | 세션 수, 비용, 토큰, 활동 시간 종합 |
+| API Requests | `cc-api-requests` | API 요청 수, 비용, 지연시간, 캐시 |
+| Tool Analytics | `cc-tool-analytics` | 도구 실행 횟수, 성공률, 지속시간 통계 |
+| Events Explorer | `cc-events-explorer` | 이벤트 타입별 카운트 및 스트림 |
+| Prompt Analytics | `cc-prompt-analytics` | 프롬프트별 비용/토큰/API/도구 사용 순위 |
+| Prompt Detail | `cc-prompt-detail` | 개별 프롬프트 상세 (대화 이력, 도구/API 로그) |
+| Trace Explorer | `cc-trace-explorer` | 트레이스 검색, 타임라인(Gantt), 지속시간 분석 |
+
+모든 대시보드는 상단 네비게이션 링크로 상호 연결되어 있으며, 시간 범위와 사용자 필터가 이동 시 유지됩니다.
+
 ## 사용자별 대시보드 필터링
 
 모든 Grafana 대시보드에는 **User** 드롭다운이 포함되어 있어, 특정 사용자의 이메일 기준으로 데이터를 필터링할 수 있습니다.
 
 - 사용자 목록은 Prometheus의 `user_email` 레이블에서 동적으로 조회됩니다.
 - Claude Code SDK가 텔레메트리 전송 시 `user_email`을 자동으로 포함하므로 별도 설정이 필요 없습니다.
-- "All" 선택 시 모든 사용자의 데이터를 통합 조회합니다.
+- 대시보드 첫 진입 시에는 첫 번째 사용자 값이 기본 선택됩니다.
 - 대시보드 간 이동 시 선택한 사용자 필터가 유지됩니다.
+- Trace Explorer 상단 통계 카드는 Tempo 검색 결과 샘플을 기준으로 표시됩니다.
 
 ## Claude Code OTEL 환경변수
 
@@ -85,6 +100,8 @@ Claude Code 텔레메트리를 이 스택으로 전송하기 위한 환경변수
   "env": {
     // 텔레메트리 활성화
     "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    // 트레이싱 활성화 (베타, traces 전송에 필수)
+    "CLAUDE_CODE_ENHANCED_TELEMETRY_BETA": "1",
 
     // Exporter 활성화 (logs/metrics/traces)
     "OTEL_METRICS_EXPORTER": "otlp",
@@ -117,7 +134,8 @@ Claude Code 텔레메트리를 이 스택으로 전송하기 위한 환경변수
 }
 ```
 
-> `CLAUDE_CODE_ENABLE_TELEMETRY`를 `"1"`로 설정해야 텔레메트리가 활성화됩니다. 이 값이 없으면 나머지 OTEL 환경변수를 설정해도 데이터가 전송되지 않습니다.
+> - `CLAUDE_CODE_ENABLE_TELEMETRY`를 `"1"`로 설정해야 텔레메트리가 활성화됩니다. 이 값이 없으면 나머지 OTEL 환경변수를 설정해도 데이터가 전송되지 않습니다.
+> - `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA`를 `"1"`로 설정해야 **트레이스(spans)**가 전송됩니다. 이 값이 없으면 메트릭과 로그만 전송되고 Trace Explorer 대시보드에 데이터가 표시되지 않습니다.
 
 ## 접속 주소
 
