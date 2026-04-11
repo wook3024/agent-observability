@@ -48,6 +48,15 @@
       "targetBlank": false,
       "keepTime": true,
       "includeVars": true
+    },
+    {
+      "title": "Trace Explorer",
+      "url": "/d/cc-trace-explorer",
+      "type": "link",
+      "icon": "external link",
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
     }
   ],
   "panels": [
@@ -355,7 +364,7 @@
         "query": "label_values(claude_code_session_count_total, user_email)",
         "refresh": 1,
         "sort": 1,
-        "includeAll": true,
+        "includeAll": false,
         "allValue": ".*",
         "multi": false,
         "hide": 0,

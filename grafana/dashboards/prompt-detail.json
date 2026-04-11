@@ -62,7 +62,7 @@
         "query": "label_values(claude_code_session_count_total, user_email)",
         "refresh": 1,
         "sort": 1,
-        "includeAll": true,
+        "includeAll": false,
         "allValue": ".*",
         "multi": false,
         "hide": 0,
@@ -80,6 +80,18 @@
         "options": [],
         "query": "",
         "hide": 0
+      },
+      {
+        "name": "session_id",
+        "label": "Session ID",
+        "type": "textbox",
+        "current": {
+          "value": "",
+          "text": ""
+        },
+        "options": [],
+        "query": "",
+        "hide": 2
       }
     ]
   },
@@ -335,40 +347,10 @@
           }
         },
         {
-          "id": "organize",
+          "id": "filterFieldsByName",
           "options": {
-            "excludeByName": {
-              "Time": true,
-              "Line": true,
-              "id": true,
-              "tsNs": true,
-              "labels": true,
-              "app_version": true,
-              "department": true,
-              "event_name": true,
-              "host_arch": true,
-              "level": true,
-              "observed_timestamp": true,
-              "organization_id": true,
-              "os_type": true,
-              "os_version": true,
-              "scope_name": true,
-              "scope_version": true,
-              "service_name": true,
-              "service_version": true,
-              "session_id": true,
-              "team_id": true,
-              "terminal_type": true,
-              "user_account_id": true,
-              "user_account_uuid": true,
-              "user_email": true,
-              "user_id": true,
-              "__error__": true,
-              "__error_details__": true,
-              "prompt_id": true,
-              "event_sequence": true,
-              "event_timestamp": true,
-              "prompt_length": true
+            "include": {
+              "names": ["prompt"]
             }
           }
         }
@@ -467,7 +449,7 @@
                 "value": [
                   {
                     "title": "View this prompt",
-                    "url": "/d/cc-prompt-detail?var-prompt_id=${__value.text}&${__url_time_range}",
+                    "url": "/d/cc-prompt-detail?var-prompt_id=${__value.text}&var-session_id=${session_id}&var-user_email=${user_email}&${__url_time_range}",
                     "targetBlank": false
                   }
                 ]
@@ -503,7 +485,7 @@
       "type": "table",
       "targets": [
         {
-          "expr": "{service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `user_prompt`",
+          "expr": "{service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `user_prompt` | session_id = `$session_id`",
           "refId": "A"
         }
       ],
@@ -516,38 +498,16 @@
           }
         },
         {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": ["event_sequence", "event_timestamp", "prompt", "prompt_id"]
+            }
+          }
+        },
+        {
           "id": "organize",
           "options": {
-            "excludeByName": {
-              "Time": true,
-              "Line": true,
-              "id": true,
-              "tsNs": true,
-              "labels": true,
-              "app_version": true,
-              "department": true,
-              "event_name": true,
-              "host_arch": true,
-              "level": true,
-              "observed_timestamp": true,
-              "organization_id": true,
-              "os_type": true,
-              "os_version": true,
-              "scope_name": true,
-              "scope_version": true,
-              "service_name": true,
-              "service_version": true,
-              "session_id": true,
-              "team_id": true,
-              "terminal_type": true,
-              "user_account_id": true,
-              "user_account_uuid": true,
-              "user_email": true,
-              "user_id": true,
-              "__error__": true,
-              "__error_details__": true,
-              "prompt_length": true
-            },
             "indexByName": {
               "event_sequence": 0,
               "event_timestamp": 1,

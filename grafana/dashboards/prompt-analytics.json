@@ -51,6 +51,15 @@
       "targetBlank": false,
       "keepTime": true,
       "includeVars": true
+    },
+    {
+      "title": "Trace Explorer",
+      "url": "/d/cc-trace-explorer",
+      "type": "link",
+      "icon": "external link",
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
     }
   ],
   "annotations": {
@@ -70,7 +79,7 @@
         "query": "label_values(claude_code_session_count_total, user_email)",
         "refresh": 1,
         "sort": 1,
-        "includeAll": true,
+        "includeAll": false,
         "allValue": ".*",
         "multi": false,
         "hide": 0,
@@ -173,10 +182,22 @@
                 "value": [
                   {
                     "title": "View Detail",
-                    "url": "/d/cc-prompt-detail?var-prompt_id=${__value.text}&${__url_time_range}",
+                    "url": "/d/cc-prompt-detail?var-prompt_id=${__value.text}&var-session_id=${__data.fields.session_id}&var-user_email=${user_email}&${__url_time_range}",
                     "targetBlank": false
                   }
                 ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
               }
             ]
           }
@@ -222,43 +243,22 @@
           }
         },
         {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": ["event_sequence", "event_timestamp", "prompt", "prompt_id", "session_id"]
+            }
+          }
+        },
+        {
           "id": "organize",
           "options": {
-            "excludeByName": {
-              "Time": true,
-              "Line": true,
-              "id": true,
-              "tsNs": true,
-              "labels": true,
-              "app_version": true,
-              "department": true,
-              "event_name": true,
-              "host_arch": true,
-              "level": true,
-              "observed_timestamp": true,
-              "organization_id": true,
-              "os_type": true,
-              "os_version": true,
-              "scope_name": true,
-              "scope_version": true,
-              "service_name": true,
-              "service_version": true,
-              "session_id": true,
-              "team_id": true,
-              "terminal_type": true,
-              "user_account_id": true,
-              "user_account_uuid": true,
-              "user_email": true,
-              "user_id": true,
-              "__error__": true,
-              "__error_details__": true,
-              "prompt_length": true
-            },
             "indexByName": {
               "event_sequence": 0,
               "event_timestamp": 1,
               "prompt": 2,
-              "prompt_id": 3
+              "prompt_id": 3,
+              "session_id": 4
             }
           }
         }
@@ -309,7 +309,7 @@
                 "value": [
                   {
                     "title": "View Prompt Detail",
-                    "url": "/d/cc-prompt-detail?var-prompt_id=${__value.text}&${__url_time_range}",
+                    "url": "/d/cc-prompt-detail?var-prompt_id=${__value.text}&var-session_id=${__data.fields.session_id}&var-user_email=${user_email}&${__url_time_range}",
                     "targetBlank": false
                   }
                 ]
@@ -519,6 +519,18 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
           }
         ]
       },
@@ -559,49 +571,49 @@
       "type": "table",
       "targets": [
         {
-          "expr": "sum by (prompt_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | unwrap cost_usd [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap cost_usd [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "Cost",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | prompt_id =~ \".+\" [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "APIs",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `tool_result` [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `tool_result` | prompt_id =~ \".+\" [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "Tools",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | unwrap input_tokens [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap input_tokens [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "InputTok",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | unwrap output_tokens [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap output_tokens [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "OutputTok",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | unwrap duration_ms [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "Duration",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `tool_result` | unwrap duration_ms [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `tool_result` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "ToolDuration",
           "instant": true
         },
         {
-          "expr": "(max by (prompt_id) (max_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | unwrap observed_timestamp [$__range])) - min by (prompt_id) (min_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | unwrap observed_timestamp [$__range]))) / 1000000",
+          "expr": "(max by (prompt_id, session_id) (max_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range])) - min by (prompt_id, session_id) (min_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range]))) / 1000000",
           "legendFormat": "{{prompt_id}}",
           "refId": "TotalDuration",
           "instant": true
