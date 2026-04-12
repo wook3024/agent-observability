@@ -1,20 +1,40 @@
 {
   "uid": "cc-events-explorer",
-  "title": "Claude Code - Events Explorer",
+  "title": "Claude Code - Investigation Hub: Events Explorer",
   "tags": [
     "claude-code",
-    "events"
+    "events",
+    "hub"
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "refresh": "10s",
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "30s",
   "time": {
-    "from": "now-1h",
+    "from": "now-6h",
     "to": "now"
+  },
+  "timepicker": {},
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
   },
   "links": [
     {
-      "title": "Overview",
+      "title": "Executive Overview",
       "url": "/d/cc-overview",
       "type": "link",
       "icon": "external link",
@@ -23,7 +43,7 @@
       "includeVars": true
     },
     {
-      "title": "API Requests",
+      "title": "API Investigation",
       "url": "/d/cc-api-requests",
       "type": "link",
       "icon": "external link",
@@ -32,7 +52,7 @@
       "includeVars": true
     },
     {
-      "title": "Tool Analytics",
+      "title": "Tool Investigation",
       "url": "/d/cc-tool-analytics",
       "type": "link",
       "icon": "external link",
@@ -41,8 +61,17 @@
       "includeVars": true
     },
     {
-      "title": "Prompt Analytics",
+      "title": "Prompt Investigation",
       "url": "/d/cc-prompt-analytics",
+      "type": "link",
+      "icon": "external link",
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
+    },
+    {
+      "title": "Session Explorer",
+      "url": "/d/cc-session-explorer",
       "type": "link",
       "icon": "external link",
       "targetBlank": false,
@@ -59,29 +88,151 @@
       "includeVars": true
     }
   ],
+  "templating": {
+    "list": [
+      {
+        "name": "user_email",
+        "label": "User",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(claude_code_session_count_total, user_email)",
+        "query": "label_values(claude_code_session_count_total, user_email)",
+        "refresh": 1,
+        "sort": 1,
+        "includeAll": false,
+        "allValue": ".*",
+        "multi": false,
+        "hide": 0,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "session_id",
+        "label": "Session",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "P8E80F9AEF21F6940"
+        },
+        "definition": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id =~ \".+\" [$__range])))",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "hide": 0,
+        "options": [],
+        "regex": "/.*session_id=\"([^\"]+)\".*/",
+        "current": {
+          "text": "All",
+          "value": ".*",
+          "selected": true
+        }
+      },
+      {
+        "name": "prompt_id",
+        "label": "Prompt",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "P8E80F9AEF21F6940"
+        },
+        "definition": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "hide": 0,
+        "options": [],
+        "regex": "/.*prompt_id=\"([^\"]+)\".*/",
+        "current": {
+          "text": "All",
+          "value": ".*",
+          "selected": true
+        }
+      },
+      {
+        "name": "event_name",
+        "label": "Event",
+        "type": "custom",
+        "definition": "api_request,api_error,tool_result,tool_decision,user_prompt",
+        "query": "api_request,api_error,tool_result,tool_decision,user_prompt",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "hide": 0,
+        "refresh": 2,
+        "current": {
+          "text": "All",
+          "value": ".*",
+          "selected": true
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": ".*",
+            "selected": true
+          },
+          {
+            "text": "api_request",
+            "value": "api_request",
+            "selected": false
+          },
+          {
+            "text": "api_error",
+            "value": "api_error",
+            "selected": false
+          },
+          {
+            "text": "tool_result",
+            "value": "tool_result",
+            "selected": false
+          },
+          {
+            "text": "tool_decision",
+            "value": "tool_decision",
+            "selected": false
+          },
+          {
+            "text": "user_prompt",
+            "value": "user_prompt",
+            "selected": false
+          }
+        ]
+      }
+    ]
+  },
   "panels": [
     {
-      "id": 100,
-      "type": "row",
-      "title": "Event Counts",
+      "id": 900,
+      "type": "text",
+      "title": "Events investigation guidance",
       "gridPos": {
-        "h": 1,
+        "h": 3,
         "w": 24,
         "x": 0,
         "y": 0
       },
-      "collapsed": false,
-      "panels": []
+      "options": {
+        "content": "### Events Investigation\nUse this dashboard when you need the event stream itself, including explicit `api_error` failures. The **Event Investigation Queue** is the fastest path from an event to session or prompt detail, and the `Event` variable now filters both the chart and the raw stream.",
+        "mode": "markdown"
+      }
     },
     {
       "id": 1,
       "type": "stat",
-      "title": "API Requests",
+      "title": "Selected Event Count",
       "gridPos": {
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 1
+        "y": 3
       },
       "datasource": {
         "type": "loki",
@@ -89,8 +240,53 @@
       },
       "targets": [
         {
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `api_request` [$__range]))",
-          "refId": "A"
+          "refId": "A",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name=~\"$event_name\" [$__range])) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      },
+      "description": "Count for the currently selected event filter."
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "API Requests in Scope",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 3
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -118,58 +314,14 @@
       }
     },
     {
-      "id": 2,
-      "type": "stat",
-      "title": "Tool Results",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 1
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "targets": [
-        {
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `tool_result` [$__range]))",
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "green"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      }
-    },
-    {
       "id": 3,
       "type": "stat",
-      "title": "Tool Decisions",
+      "title": "Tool Results in Scope",
       "gridPos": {
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 1
+        "y": 3
       },
       "datasource": {
         "type": "loki",
@@ -177,8 +329,8 @@
       },
       "targets": [
         {
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `tool_decision` [$__range]))",
-          "refId": "A"
+          "refId": "A",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -186,7 +338,7 @@
           "unit": "short",
           "color": {
             "mode": "fixed",
-            "fixedColor": "orange"
+            "fixedColor": "blue"
           }
         },
         "overrides": []
@@ -208,12 +360,12 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "User Prompts",
+      "title": "API Errors in Scope",
       "gridPos": {
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 1
+        "y": 3
       },
       "datasource": {
         "type": "loki",
@@ -221,8 +373,8 @@
       },
       "targets": [
         {
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | event_name = `user_prompt` [$__range]))",
-          "refId": "A"
+          "refId": "A",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_error` [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -230,7 +382,7 @@
           "unit": "short",
           "color": {
             "mode": "fixed",
-            "fixedColor": "purple"
+            "fixedColor": "blue"
           }
         },
         "overrides": []
@@ -247,85 +399,59 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "textMode": "auto"
-      }
+      },
+      "description": "Explicit API failures in the current scope. Use this together with the Event filter to pivot into the raw stream."
     },
     {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 5
-      },
-      "id": 200,
-      "title": "Event Distribution",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "drawStyle": "bars",
-            "fillOpacity": 70,
-            "stacking": {
-              "mode": "normal"
-            }
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
+      "id": 6,
+      "type": "timeseries",
+      "title": "Events over Time (selected filter applied)",
       "gridPos": {
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 7
       },
-      "id": 6,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "calcs": [
-            "sum"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
-      "title": "Events over Time by Type",
-      "type": "timeseries",
       "targets": [
         {
-          "expr": "sum by (event_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" [5m]))",
-          "legendFormat": "{{event_name}}",
-          "refId": "A"
+          "refId": "A",
+          "expr": "sum by (event_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name=~\"$event_name\" [5m]))",
+          "legendFormat": "{{model}}"
         }
-      ]
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 14
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
       },
-      "id": 201,
-      "title": "All Events",
-      "type": "row"
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none",
+          "hideZeros": false
+        }
+      },
+      "description": "The selected event filter now applies directly to the chart query."
     },
     {
-      "id": 5,
-      "type": "logs",
-      "title": "All Events Stream",
+      "id": 700,
+      "type": "table",
+      "title": "Event Investigation Queue",
       "gridPos": {
-        "h": 20,
+        "h": 10,
         "w": 24,
         "x": 0,
         "y": 15
@@ -336,7 +462,304 @@
       },
       "targets": [
         {
-          "expr": "{service_name=\"claude-code\"} | user_email=~\"$user_email\"",
+          "expr": "{service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name=~\"$event_name\"",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": true,
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_timestamp"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Time"
+              },
+              {
+                "id": "custom.width",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Event"
+              },
+              {
+                "id": "custom.width",
+                "value": 140
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open Events Investigation",
+                    "url": "/d/cc-events-explorer?var-user_email=${user_email}&var-session_id=${__data.fields.session_id}&var-prompt_id=${__data.fields.prompt_id}&var-event_name=${__value.text}&${__url_time_range}",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Session ID"
+              },
+              {
+                "id": "custom.width",
+                "value": 170
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open Session Explorer",
+                    "url": "/d/cc-session-explorer?var-user_email=${user_email}&var-session_id=${__value.text}&var-prompt_id=${__data.fields.prompt_id}&${__url_time_range}",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "prompt_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Prompt ID"
+              },
+              {
+                "id": "custom.width",
+                "value": 170
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open Prompt Detail",
+                    "url": "/d/cc-prompt-detail?var-user_email=${user_email}&var-session_id=${__data.fields.session_id}&var-prompt_id=${__value.text}&${__url_time_range}",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tool_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Tool"
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter Tool Investigation by tool",
+                    "url": "/d/cc-tool-analytics?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${__value.text}&${__url_time_range}",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Model"
+              },
+              {
+                "id": "custom.width",
+                "value": 190
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter API Investigation by model",
+                    "url": "/d/cc-api-requests?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-model=${__value.text}&${__url_time_range}",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "status_code"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Status"
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "attempt"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Attempt"
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "error"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Error"
+              },
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Time",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": true,
+          "reducer": [
+            "count"
+          ],
+          "countRows": true
+        }
+      },
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "labels",
+            "format": "auto"
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "event_timestamp",
+                "event_name",
+                "session_id",
+                "prompt_id",
+                "tool_name",
+                "model",
+                "status_code",
+                "attempt",
+                "error"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "event_timestamp": 0,
+              "event_name": 1,
+              "session_id": 2,
+              "prompt_id": 3,
+              "tool_name": 4,
+              "model": 5,
+              "status_code": 6,
+              "attempt": 7,
+              "error": 8
+            },
+            "renameByName": {
+              "event_timestamp": "Time",
+              "event_name": "Event",
+              "session_id": "Session ID",
+              "prompt_id": "Prompt ID",
+              "tool_name": "Tool",
+              "model": "Model",
+              "status_code": "Status",
+              "attempt": "Attempt",
+              "error": "Error"
+            }
+          }
+        }
+      ],
+      "description": "Use Event, Session, or Prompt IDs to pivot into the right detail screen."
+    },
+    {
+      "id": 5,
+      "type": "logs",
+      "title": "Raw Event Stream",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "expr": "{service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name=~\"$event_name\"",
           "refId": "A"
         }
       ],
@@ -347,70 +770,8 @@
         "wrapLogMessage": true,
         "enableLogDetails": true,
         "dedupStrategy": "none"
-      }
-    }
-  ],
-  "templating": {
-    "list": [
-      {
-        "name": "user_email",
-        "label": "User",
-        "type": "query",
-        "datasource": {
-          "type": "prometheus",
-          "uid": "PBFA97CFB590B2093"
-        },
-        "definition": "label_values(claude_code_session_count_total, user_email)",
-        "query": "label_values(claude_code_session_count_total, user_email)",
-        "refresh": 1,
-        "sort": 1,
-        "includeAll": false,
-        "allValue": ".*",
-        "multi": false,
-        "hide": 0,
-        "current": {},
-        "options": []
       },
-      {
-        "name": "event_type",
-        "label": "Event Type",
-        "type": "custom",
-        "current": {
-          "text": "All",
-          "value": ""
-        },
-        "options": [
-          {
-            "text": "All",
-            "value": "",
-            "selected": true
-          },
-          {
-            "text": "api_request",
-            "value": "api_request",
-            "selected": false
-          },
-          {
-            "text": "tool_result",
-            "value": "tool_result",
-            "selected": false
-          },
-          {
-            "text": "tool_decision",
-            "value": "tool_decision",
-            "selected": false
-          },
-          {
-            "text": "user_prompt",
-            "value": "user_prompt",
-            "selected": false
-          }
-        ],
-        "query": "api_request,tool_result,tool_decision,user_prompt",
-        "includeAll": true,
-        "allValue": "",
-        "hide": 0
-      }
-    ]
-  }
+      "description": "The event filter now matches the raw stream query as well."
+    }
+  ]
 }

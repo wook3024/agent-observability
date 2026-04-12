@@ -1,0 +1,507 @@
+{
+  "uid": "codex-overview",
+  "title": "Codex CLI - Executive Overview (Draft)",
+  "tags": [
+    "codex-cli",
+    "draft",
+    "executive"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Codex Tool/API Analytics",
+      "url": "/d/codex-tool-api-analytics",
+      "type": "link",
+      "icon": "external link",
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "service_name",
+        "label": "Service",
+        "type": "custom",
+        "definition": "codex-cli,codex_cli,desktop_app,.*",
+        "query": "codex-cli,codex_cli,desktop_app,.*",
+        "includeAll": false,
+        "multi": false,
+        "hide": 0,
+        "refresh": 2,
+        "current": {
+          "text": "codex-cli",
+          "value": "codex-cli",
+          "selected": true
+        },
+        "options": [
+          {
+            "text": "codex-cli",
+            "value": "codex-cli",
+            "selected": true
+          },
+          {
+            "text": "codex_cli",
+            "value": "codex_cli",
+            "selected": false
+          },
+          {
+            "text": "desktop_app",
+            "value": "desktop_app",
+            "selected": false
+          },
+          {
+            "text": ".*",
+            "value": ".*",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "name": "user_email",
+        "label": "User",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "P8E80F9AEF21F6940"
+        },
+        "definition": "query_result(sum by (user_email) (count_over_time({service_name=~\"$service_name\"} | user_email =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (user_email) (count_over_time({service_name=~\"$service_name\"} | user_email =~ \".+\" [$__range])))",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "hide": 0,
+        "options": [],
+        "regex": "/.*user_email=\"([^\"]+)\".*/",
+        "current": {
+          "text": "All",
+          "value": ".*",
+          "selected": true
+        }
+      },
+      {
+        "name": "originator",
+        "label": "Originator",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "P8E80F9AEF21F6940"
+        },
+        "definition": "query_result(sum by (originator) (count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (originator) (count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator =~ \".+\" [$__range])))",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "hide": 0,
+        "options": [],
+        "regex": "/.*originator=\"([^\"]+)\".*/",
+        "current": {
+          "text": "All",
+          "value": ".*",
+          "selected": true
+        }
+      },
+      {
+        "name": "session_source",
+        "label": "Session Source",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "P8E80F9AEF21F6940"
+        },
+        "definition": "query_result(sum by (session_source) (count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (session_source) (count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source =~ \".+\" [$__range])))",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "hide": 0,
+        "options": [],
+        "regex": "/.*session_source=\"([^\"]+)\".*/",
+        "current": {
+          "text": "All",
+          "value": ".*",
+          "selected": true
+        }
+      },
+      {
+        "name": "model",
+        "label": "Model",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "P8E80F9AEF21F6940"
+        },
+        "definition": "query_result(sum by (model) (count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (model) (count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model =~ \".+\" [$__range])))",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "hide": 0,
+        "options": [],
+        "regex": "/.*model=\"([^\"]+)\".*/",
+        "current": {
+          "text": "All",
+          "value": ".*",
+          "selected": true
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 900,
+      "type": "text",
+      "title": "How to use this draft",
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "content": "### Codex CLI Overview\n이 대시보드는 `Codex CLI` telemetry가 현재 스택에 들어왔는지 빠르게 확인하는 초안입니다. 기본 필터는 `service_name`, `user_email`, `originator`, `session_source`, `model`이고, 패널은 `event.name=\\\"codex.*\\\"` 로그를 우선 사용합니다.",
+        "mode": "markdown"
+      }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Completed Turns",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 3
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.sse_event\\\"\" |= \"event.kind=response.completed\" [$__range])) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Failed API Requests",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 3
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.api_request\\\"\" |= \"success=false\" [$__range])) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Tool Success Rate",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 3
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "((sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.tool_result\\\"\" |= \"success=true\" [$__range])) / sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.tool_result\\\"\" [$__range]))) * 100) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "P95 Tool Duration",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 3
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(quantile_over_time(0.95, {service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.tool_result\\\"\" | logfmt | unwrap duration_ms [$__range])) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "yellow"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Key Events over Time",
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 0,
+        "y": 7
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.api_request\\\"\" [5m]))",
+          "legendFormat": "api_request"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.tool_result\\\"\" [5m]))",
+          "legendFormat": "tool_result"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.sse_event\\\"\" |= \"event.kind=response.completed\" [5m]))",
+          "legendFormat": "turn_completed"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none",
+          "hideZeros": false
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "barchart",
+      "title": "Top Tools",
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 14,
+        "y": 7
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.tool_result\\\"\" | logfmt [$__range]))",
+          "legendFormat": "{{tool_name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
+        "legend": {
+          "displayMode": "hidden",
+          "placement": "bottom",
+          "showLegend": false
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Recent Investigation Queue",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"codex.\" | logfmt"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": true,
+            "inspect": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false
+        }
+      }
+    }
+  ]
+}
