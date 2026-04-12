@@ -47,24 +47,34 @@
     "list": [
       {
         "name": "service_name",
-        "label": "Service",
+        "label": "Log Service",
         "type": "custom",
-        "definition": "codex-cli,codex_cli,desktop_app,.*",
-        "query": "codex-cli,codex_cli,desktop_app,.*",
+        "definition": "codex_cli_rs,desktop_app,codex-cli,codex_cli,.*",
+        "query": "codex_cli_rs,desktop_app,codex-cli,codex_cli,.*",
         "includeAll": false,
         "multi": false,
         "hide": 0,
         "refresh": 2,
         "current": {
-          "text": "codex-cli",
-          "value": "codex-cli",
+          "text": "codex_cli_rs",
+          "value": "codex_cli_rs",
           "selected": true
         },
         "options": [
           {
+            "text": "codex_cli_rs",
+            "value": "codex_cli_rs",
+            "selected": true
+          },
+          {
+            "text": "desktop_app",
+            "value": "desktop_app",
+            "selected": false
+          },
+          {
             "text": "codex-cli",
             "value": "codex-cli",
-            "selected": true
+            "selected": false
           },
           {
             "text": "codex_cli",
@@ -72,9 +82,32 @@
             "selected": false
           },
           {
-            "text": "desktop_app",
-            "value": "desktop_app",
+            "text": ".*",
+            "value": ".*",
             "selected": false
+          }
+        ]
+      },
+      {
+        "name": "metric_job",
+        "label": "Metric Job",
+        "type": "custom",
+        "definition": "codex_cli_rs,.*",
+        "query": "codex_cli_rs,.*",
+        "includeAll": false,
+        "multi": false,
+        "hide": 0,
+        "refresh": 2,
+        "current": {
+          "text": "codex_cli_rs",
+          "value": "codex_cli_rs",
+          "selected": true
+        },
+        "options": [
+          {
+            "text": "codex_cli_rs",
+            "value": "codex_cli_rs",
+            "selected": true
           },
           {
             "text": ".*",
@@ -193,8 +226,184 @@
         "y": 0
       },
       "options": {
-        "content": "### Codex CLI Overview\n이 대시보드는 `Codex CLI` telemetry가 현재 스택에 들어왔는지 빠르게 확인하는 초안입니다. 기본 필터는 `service_name`, `user_email`, `originator`, `session_source`, `model`이고, 패널은 `event.name=\\\"codex.*\\\"` 로그를 우선 사용합니다.",
+        "content": "### Codex CLI Overview\n이 대시보드는 `Codex CLI` telemetry가 현재 스택에 들어왔는지 빠르게 확인하는 초안입니다. 로그는 Loki에서 `service_name=codex_cli_rs`, 메트릭은 Prometheus에서 `exported_job=codex_cli_rs` 기준으로 조회합니다. Loki는 line body가 비어 있고 structured metadata가 풍부하므로 조사형 패널은 body 문자열 검색 대신 label 필터를 사용합니다.",
         "mode": "markdown"
+      }
+    },
+    {
+      "id": 101,
+      "type": "stat",
+      "title": "Observed Turns",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 3
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(max_over_time(codex_conversation_turn_count_total{exported_job=~\"$metric_job\", model=~\"$model\", originator=~\"$originator\", session_source=~\"$session_source\"}[$__range])) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 102,
+      "type": "stat",
+      "title": "Avg E2E Duration",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 3
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(max_over_time(codex_turn_e2e_duration_ms_milliseconds_sum{exported_job=~\"$metric_job\", model=~\"$model\", originator=~\"$originator\", session_source=~\"$session_source\"}[$__range])) / sum(max_over_time(codex_turn_e2e_duration_ms_milliseconds_count{exported_job=~\"$metric_job\", model=~\"$model\", originator=~\"$originator\", session_source=~\"$session_source\"}[$__range]))) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "yellow"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 103,
+      "type": "stat",
+      "title": "Avg TTFT",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 3
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(max_over_time(codex_turn_ttft_duration_ms_milliseconds_sum{exported_job=~\"$metric_job\", model=~\"$model\", originator=~\"$originator\", session_source=~\"$session_source\"}[$__range])) / sum(max_over_time(codex_turn_ttft_duration_ms_milliseconds_count{exported_job=~\"$metric_job\", model=~\"$model\", originator=~\"$originator\", session_source=~\"$session_source\"}[$__range]))) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 104,
+      "type": "stat",
+      "title": "Total Tokens",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 3
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(codex_turn_token_usage_sum{exported_job=~\"$metric_job\", model=~\"$model\", originator=~\"$originator\", session_source=~\"$session_source\", token_type=\"total\"}[$__range])) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
       }
     },
     {
@@ -205,7 +414,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 3
+        "y": 7
       },
       "datasource": {
         "type": "loki",
@@ -214,7 +423,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.sse_event\\\"\" |= \"event.kind=response.completed\" [$__range])) or vector(0)"
+          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email =~ \"$user_email\" | originator =~ \"$originator\" | session_source =~ \"$session_source\" | model =~ \"$model\" | event_name = \"codex.sse_event\" | event_kind = \"response.completed\" [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -249,7 +458,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 3
+        "y": 7
       },
       "datasource": {
         "type": "loki",
@@ -258,7 +467,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.api_request\\\"\" |= \"success=false\" [$__range])) or vector(0)"
+          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email =~ \"$user_email\" | originator =~ \"$originator\" | session_source =~ \"$session_source\" | model =~ \"$model\" | event_name = \"codex.api_request\" | success = \"false\" [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -293,7 +502,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 3
+        "y": 7
       },
       "datasource": {
         "type": "loki",
@@ -302,7 +511,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "((sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.tool_result\\\"\" |= \"success=true\" [$__range])) / sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.tool_result\\\"\" [$__range]))) * 100) or vector(0)"
+          "expr": "((sum(count_over_time({service_name=~\"$service_name\"} | user_email =~ \"$user_email\" | originator =~ \"$originator\" | session_source =~ \"$session_source\" | model =~ \"$model\" | event_name = \"codex.tool_result\" | success = \"true\" [$__range])) / sum(count_over_time({service_name=~\"$service_name\"} | user_email =~ \"$user_email\" | originator =~ \"$originator\" | session_source =~ \"$session_source\" | model =~ \"$model\" | event_name = \"codex.tool_result\" [$__range]))) * 100) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -337,7 +546,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 3
+        "y": 7
       },
       "datasource": {
         "type": "loki",
@@ -346,7 +555,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(quantile_over_time(0.95, {service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.tool_result\\\"\" | logfmt | unwrap duration_ms [$__range])) or vector(0)"
+          "expr": "max(quantile_over_time(0.95, {service_name=~\"$service_name\"} | user_email =~ \"$user_email\" | originator =~ \"$originator\" | session_source =~ \"$session_source\" | model =~ \"$model\" | event_name = \"codex.tool_result\" | duration_ms =~ \".+\" | unwrap duration_ms [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -381,7 +590,7 @@
         "h": 8,
         "w": 14,
         "x": 0,
-        "y": 7
+        "y": 11
       },
       "datasource": {
         "type": "loki",
@@ -390,17 +599,17 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.api_request\\\"\" [5m]))",
+          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email =~ \"$user_email\" | originator =~ \"$originator\" | session_source =~ \"$session_source\" | model =~ \"$model\" | event_name = \"codex.api_request\" [5m]))",
           "legendFormat": "api_request"
         },
         {
           "refId": "B",
-          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.tool_result\\\"\" [5m]))",
+          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email =~ \"$user_email\" | originator =~ \"$originator\" | session_source =~ \"$session_source\" | model =~ \"$model\" | event_name = \"codex.tool_result\" [5m]))",
           "legendFormat": "tool_result"
         },
         {
           "refId": "C",
-          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.sse_event\\\"\" |= \"event.kind=response.completed\" [5m]))",
+          "expr": "sum(count_over_time({service_name=~\"$service_name\"} | user_email =~ \"$user_email\" | originator =~ \"$originator\" | session_source =~ \"$session_source\" | model =~ \"$model\" | event_name = \"codex.sse_event\" | event_kind = \"response.completed\" [5m]))",
           "legendFormat": "turn_completed"
         }
       ],
@@ -434,7 +643,7 @@
         "h": 8,
         "w": 10,
         "x": 14,
-        "y": 7
+        "y": 11
       },
       "datasource": {
         "type": "loki",
@@ -443,7 +652,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"event.name=\\\"codex.tool_result\\\"\" | logfmt [$__range]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service_name\"} | user_email =~ \"$user_email\" | originator =~ \"$originator\" | session_source =~ \"$session_source\" | model =~ \"$model\" | event_name = \"codex.tool_result\" | tool_name =~ \".+\" [$__range]))",
           "legendFormat": "{{tool_name}}"
         }
       ],
@@ -474,7 +683,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 19
       },
       "datasource": {
         "type": "loki",
@@ -483,7 +692,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "{service_name=~\"$service_name\"} | user_email=~\"$user_email\" | originator=~\"$originator\" | session_source=~\"$session_source\" | model=~\"$model\" |= \"codex.\" | logfmt"
+          "expr": "{service_name=~\"$service_name\"} | user_email =~ \"$user_email\" | originator =~ \"$originator\" | session_source =~ \"$session_source\" | model =~ \"$model\" | event_name =~ \"codex\\\\..+\""
         }
       ],
       "fieldConfig": {
