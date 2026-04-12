@@ -20,6 +20,9 @@ processors:
       - key: user_id
         value: "unknown"
         action: insert
+      - key: user_email
+        value: "unknown"
+        action: insert
 
 exporters:
   prometheusremotewrite:
@@ -50,5 +53,5 @@ service:
       exporters: [otlp/tempo]
     logs:
       receivers: [otlp]
-      processors: [batch]
+      processors: [resource/default-user, batch]
       exporters: [otlphttp/loki]

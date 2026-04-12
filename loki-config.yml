@@ -33,10 +33,13 @@ limits_config:
         - action: index_label
           attributes:
             - user_id
+            - user_email
     log_attributes:
       - action: index_label
         attributes:
           - user_id
+          - user_email
+          - event_name
 
 compactor:
   working_directory: /loki/compactor

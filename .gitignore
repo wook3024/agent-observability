@@ -1,7 +1,16 @@
 .DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/
 .playwright-cli/
 backups/
 .specify/
 .claude/
 specs/
 launchd/
+.playwright-mcp/
+output/
+codex-cli-observability-plan.md
+claude-settings-local.patch

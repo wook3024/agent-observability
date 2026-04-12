@@ -1,0 +1,187 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: claude-code-canary
+    folder: Claude Code Canary
+    interval: 5m
+    rules:
+      - uid: cc-api-error-rate
+        title: Claude Code API Error Rate Elevated
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: P8E80F9AEF21F6940
+            model:
+              datasource:
+                type: loki
+                uid: P8E80F9AEF21F6940
+              editorMode: code
+              expr: ((sum(count_over_time({service_name="claude-code"} | event_name = `api_error` [15m])) / sum(count_over_time({service_name="claude-code"} | event_name = `api_request` [15m]))) * 100) or vector(0)
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              queryType: instant
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 2
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: classic_conditions
+        noDataState: NoData
+        execErrState: Error
+        for: 10m
+        annotations:
+          summary: API 오류율이 최근 15분 기준 2%를 초과했습니다.
+          description: api_error / api_request 비율 기반 canary입니다. API Requests와 Events Explorer에서 오류 유형과 모델 분해를 확인하세요.
+          runbook_url: /d/cc-api-requests
+        labels:
+          severity: warning
+          signal: api_error_rate
+          team: observability
+        isPaused: false
+
+      - uid: cc-abort-reject-rate
+        title: Claude Code Abort Reject Rate Elevated
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: P8E80F9AEF21F6940
+            model:
+              datasource:
+                type: loki
+                uid: P8E80F9AEF21F6940
+              editorMode: code
+              expr: ((sum(count_over_time({service_name="claude-code"} | event_name = `tool_result` | decision_source =~ `user_abort|user_reject` [15m])) / sum(count_over_time({service_name="claude-code"} | event_name = `tool_result` [15m]))) * 100) or vector(0)
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              queryType: instant
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 25
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: classic_conditions
+        noDataState: NoData
+        execErrState: Error
+        for: 15m
+        annotations:
+          summary: 사용자 abort/reject 비율이 최근 15분 기준 25%를 초과했습니다.
+          description: 도구 실행 중 사용자 개입이 급증했습니다. Overview와 Prompt Analytics에서 특정 프롬프트/세션을 먼저 좁혀 보세요.
+          runbook_url: /d/cc-overview
+        labels:
+          severity: warning
+          signal: abort_reject_rate
+          team: observability
+        isPaused: false
+
+      - uid: cc-write-share
+        title: Claude Code Write Share Elevated
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: P8E80F9AEF21F6940
+            model:
+              datasource:
+                type: loki
+                uid: P8E80F9AEF21F6940
+              editorMode: code
+              expr: ((sum(count_over_time({service_name="claude-code"} | event_name = `tool_result` | tool_name = `Write` [15m])) / sum(count_over_time({service_name="claude-code"} | event_name = `tool_result` | tool_name =~ `Edit|Write` [15m]))) * 100) or vector(0)
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              queryType: instant
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 60
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: classic_conditions
+        noDataState: NoData
+        execErrState: Error
+        for: 15m
+        annotations:
+          summary: Write share가 최근 15분 기준 60%를 초과했습니다.
+          description: 수정보다 재작성 비중이 높아졌습니다. Tool Analytics와 Prompt Detail에서 rewrite-heavy prompt를 확인하세요.
+          runbook_url: /d/cc-tool-analytics
+        labels:
+          severity: warning
+          signal: write_share
+          team: observability
+        isPaused: false

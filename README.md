@@ -5,7 +5,7 @@
 
 ## 포함 범위
 
-- 포함됨: Docker Compose 설정, Grafana provisioning, Grafana dashboards
+- 포함됨: Docker Compose 설정, Grafana provisioning, Grafana dashboards, Grafana alert rule provisioning
 - 포함되지 않음: 실행 후 쌓이는 metrics/logs/Grafana 내부 상태 데이터
 
 현재 데이터는 Docker named volume에 저장되므로, 다른 PC로 이 폴더만 복사하면 설정은 그대로 재현되지만 기존 수집 데이터까지 같이 이동하지는 않습니다.
@@ -69,27 +69,45 @@ docker compose down -v
 
 ## Grafana 대시보드
 
-| 대시보드 | UID | 설명 |
-|----------|-----|------|
-| Overview | `cc-overview` | 세션 수, 비용, 토큰, 활동 시간 종합 |
-| API Requests | `cc-api-requests` | API 요청 수, 비용, 지연시간, 캐시 |
-| Tool Analytics | `cc-tool-analytics` | 도구 실행 횟수, 성공률, 지속시간 통계 |
-| Events Explorer | `cc-events-explorer` | 이벤트 타입별 카운트 및 스트림 |
-| Prompt Analytics | `cc-prompt-analytics` | 프롬프트별 비용/토큰/API/도구 사용 순위 |
-| Prompt Detail | `cc-prompt-detail` | 개별 프롬프트 상세 (대화 이력, 도구/API 로그) |
-| Trace Explorer | `cc-trace-explorer` | 트레이스 검색, 타임라인(Gantt), 지속시간 분석 |
+대시보드 묶음은 `Executive Overview -> Investigation Hub -> Entity Detail` 흐름으로 구성되어 있습니다.
 
-모든 대시보드는 상단 네비게이션 링크로 상호 연결되어 있으며, 시간 범위와 사용자 필터가 이동 시 유지됩니다.
+| 레이어 | 대시보드 | UID | 설명 |
+|--------|----------|-----|------|
+| Executive Overview | Executive Overview | `cc-overview` | 비용, 세션, 지연, 도구 성공률을 먼저 보고 다음 조사 대상을 고르는 진입점 |
+| Investigation Hub | API Requests | `cc-api-requests` | request volume, 비용, p95 latency, `api_error` 기반 오류 분해, 느린 요청/오류 상세 |
+| Investigation Hub | Tool Analytics | `cc-tool-analytics` | tool decision/execution/success funnel, canary stat, 느린 실행, raw tool detail |
+| Investigation Hub | Events Explorer | `cc-events-explorer` | event filter 기반 타임라인, `api_error` 포함 event investigation queue, raw event stream |
+| Investigation Hub | Prompt Analytics | `cc-prompt-analytics` | prompt investigation queue, canary column, 최근 user prompt 목록 |
+| Entity Detail | Prompt Detail | `cc-prompt-detail` | 개별 prompt의 summary-first 상세, prompt canary stat, session trace coverage, API/tool/event raw detail |
+| Entity Detail | Session Explorer | `cc-session-explorer` | 세션 단위 여정, prompt journey, API/tool summary, related traces |
+| Entity Detail | Trace Explorer | `cc-trace-explorer` | session-aware trace search, trace timeline, duration distribution |
 
-## 사용자별 대시보드 필터링
+모든 대시보드는 상단 네비게이션 링크로 상호 연결되며, 시간 범위와 공통 변수는 이동 시 유지됩니다.
 
-모든 Grafana 대시보드에는 **User** 드롭다운이 포함되어 있어, 특정 사용자의 이메일 기준으로 데이터를 필터링할 수 있습니다.
+## 공통 조사 필터
 
-- 사용자 목록은 Prometheus의 `user_email` 레이블에서 동적으로 조회됩니다.
-- Claude Code SDK가 텔레메트리 전송 시 `user_email`을 자동으로 포함하므로 별도 설정이 필요 없습니다.
-- 대시보드 첫 진입 시에는 첫 번째 사용자 값이 기본 선택됩니다.
-- 대시보드 간 이동 시 선택한 사용자 필터가 유지됩니다.
-- Trace Explorer 상단 통계 카드는 Tempo 검색 결과 샘플을 기준으로 표시됩니다.
+주요 대시보드는 **User -> Session -> Prompt -> Tool / Model / Event** 흐름의 공통 필터를 공유합니다.
+
+- **User**: Prometheus의 `user_email` 레이블에서 동적으로 조회됩니다.
+- **Session / Prompt / Tool / Model**: Loki 로그에서 현재 범위에 존재하는 값으로 동적으로 좁혀집니다.
+- **Event**: `api_request`, `api_error`, `tool_result`, `tool_decision`, `user_prompt` 필터를 공통 event 축으로 사용합니다.
+- 대시보드 첫 진입 시에는 첫 번째 사용자 값이 기본 선택되고, 나머지 필터는 기본적으로 `All` 상태로 시작합니다.
+- 표의 `Prompt ID`, `Session ID`, `Tool`, `Model`, `Event` 컬럼은 drilldown link를 포함하므로 수동 ID 입력 없이 상세 화면으로 이동할 수 있습니다.
+- Trace Explorer는 `session.id` span attribute를 이용해 세션 단위 trace correlation을 지원합니다.
+
+## Grafana Alerting
+
+기본 canary alert rule도 함께 provision 됩니다.
+
+- 규칙 파일: [grafana/provisioning/alerting/claude-code-canary-rules.yml](grafana/provisioning/alerting/claude-code-canary-rules.yml)
+- 기본 룰 그룹: `claude-code-canary`
+- 포함된 경보:
+  - `Claude Code API Error Rate Elevated`
+  - `Claude Code Abort Reject Rate Elevated`
+  - `Claude Code Write Share Elevated`
+
+현재 저장소에는 contact point / notification policy provisioning은 포함하지 않았습니다.
+따라서 alert rule은 자동 생성되지만, 실제 알림 전송은 Grafana UI의 `Alerting` 메뉴에서 contact point와 routing policy를 별도로 연결해야 합니다.
 
 ## Claude Code OTEL 환경변수
 
