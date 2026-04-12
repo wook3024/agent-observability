@@ -20,6 +20,14 @@
 
 위 버전 조합으로 실제 `docker compose up -d` 기동 검증을 완료했습니다.
 
+## 현재 수집 경로
+
+- Logs: `Codex / Claude Code -> OTEL Collector -> Loki`
+- Metrics: `Codex / Claude Code -> OTEL Collector(prometheus exporter) -> Prometheus scrape`
+- Traces: `Codex / Claude Code -> OTEL Collector -> Tempo`
+
+`Prometheus remote write` 대신 Collector의 `prometheus exporter`를 `Prometheus`가 scrape하는 구조로 운영합니다. `Codex CLI` 메트릭은 현재 이 경로에서 안정적으로 확인되었습니다.
+
 ## 사전 조건
 
 - Docker Desktop 또는 Docker Engine 설치
@@ -83,6 +91,22 @@ docker compose down -v
 | Entity Detail | Trace Explorer | `cc-trace-explorer` | session-aware trace search, trace timeline, duration distribution |
 
 모든 대시보드는 상단 네비게이션 링크로 상호 연결되며, 시간 범위와 공통 변수는 이동 시 유지됩니다.
+
+## Codex CLI 대시보드
+
+`Codex CLI`용 초안 대시보드도 함께 포함되어 있습니다.
+
+| 대시보드 | UID | 설명 |
+|--------|-----|------|
+| Codex CLI - Executive Overview (Draft) | `codex-overview` | 메트릭 기반 turn/latency/token 요약 + Loki 조사 패널 |
+| Codex CLI - Tool & API Analytics (Draft) | `codex-tool-api-analytics` | tool/api investigation 중심 패널 + metric throughput |
+
+실제 검증 결과 기준:
+
+- Loki 로그 식별 키: `service_name="codex_cli_rs"`
+- Prometheus 메트릭 식별 키: `exported_job="codex_cli_rs"`
+- `event_name`, `tool_name`, `user_email`, `originator`, `session_source`, `model`은 Loki selector 라벨이 아니라 structured metadata 필드로 다루는 편이 안전합니다.
+- 따라서 LogQL은 `{service_name="codex_cli_rs"} | event_name = "codex.tool_result"` 같은 형태를 사용해야 합니다.
 
 ## 공통 조사 필터
 
@@ -154,6 +178,25 @@ Claude Code 텔레메트리를 이 스택으로 전송하기 위한 환경변수
 
 > - `CLAUDE_CODE_ENABLE_TELEMETRY`를 `"1"`로 설정해야 텔레메트리가 활성화됩니다. 이 값이 없으면 나머지 OTEL 환경변수를 설정해도 데이터가 전송되지 않습니다.
 > - `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA`를 `"1"`로 설정해야 **트레이스(spans)**가 전송됩니다. 이 값이 없으면 메트릭과 로그만 전송되고 Trace Explorer 대시보드에 데이터가 표시되지 않습니다.
+
+## Codex CLI OTel 설정
+
+`Codex CLI`는 `~/.codex/config.toml`의 `[otel]` 블록으로 연결합니다.
+
+```toml
+[otel]
+environment = "dev"
+log_user_prompt = true
+exporter = { otlp-http = { endpoint = "http://localhost:4318/v1/logs", protocol = "binary" } }
+trace_exporter = { otlp-http = { endpoint = "http://localhost:4318/v1/traces", protocol = "binary" } }
+metrics_exporter = { otlp-http = { endpoint = "http://localhost:4318/v1/metrics", protocol = "binary" } }
+```
+
+운영 메모:
+
+- 공식 문서 예시처럼 `exporter`, `trace_exporter`, `metrics_exporter`는 `[otel]` 아래의 inline table 형태가 안정적으로 동작했습니다.
+- 로그는 Loki에서 `service_name="codex_cli_rs"`로 보입니다.
+- 메트릭은 Prometheus에서 `codex_*` 이름으로 보이며 `exported_job="codex_cli_rs"` 라벨로 필터링하는 편이 안정적입니다.
 
 ## 접속 주소
 

@@ -25,10 +25,8 @@ processors:
         action: insert
 
 exporters:
-  prometheusremotewrite:
-    endpoint: http://prometheus:9090/api/v1/write
-    tls:
-      insecure: true
+  prometheus:
+    endpoint: 0.0.0.0:8889
 
   otlphttp/loki:
     endpoint: http://loki:3100/otlp
@@ -46,7 +44,7 @@ service:
     metrics:
       receivers: [otlp]
       processors: [resource/default-user, batch]
-      exporters: [prometheusremotewrite]
+      exporters: [prometheus]
     traces:
       receivers: [otlp]
       processors: [batch]

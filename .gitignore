@@ -12,5 +12,6 @@ specs/
 launchd/
 .playwright-mcp/
 output/
+bench/
 codex-cli-observability-plan.md
 claude-settings-local.patch
