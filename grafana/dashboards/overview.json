@@ -116,8 +116,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -140,8 +140,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -164,8 +164,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -188,8 +188,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (model) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (model) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (model) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (model) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -218,7 +218,7 @@
         "y": 0
       },
       "options": {
-        "content": "### Executive Overview\nStart here for the fastest answers. Use the summary stats to decide whether you need **API Investigation**, **Tool Investigation**, **Prompt Investigation**, or **Session Explorer**. The canary row highlights regression-style signals before you drill into the tables below.",
+        "content": "### Executive Overview\nStart here for the fastest answers. Use the summary stats to decide whether you need **API Investigation**, **Tool Investigation**, **Prompt Investigation**, or **Session Explorer**. The canary row highlights regression-style signals before you drill into the tables below. The usage row combines absolute spend with short-term run-rate cards, where `1.0x` means current pace matches the trailing 7-day average pace.",
         "mode": "markdown"
       }
     },
@@ -239,7 +239,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "count(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" [$__range]))) or vector(0)"
+          "expr": "count(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" [$__range]))) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -291,7 +291,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cost_usd [$__range])) or vector(0)"
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cost_usd [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -343,7 +343,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(quantile_over_time(0.95, {service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap duration_ms [$__range])) or vector(0)"
+          "expr": "max(quantile_over_time(0.95, {service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap duration_ms [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -395,7 +395,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `true` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range])) * 100) or vector(0)"
+          "expr": "(sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `true` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range])) * 100) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -447,7 +447,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Read` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` [$__range]))) or vector(0)"
+          "expr": "(sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Read` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` [$__range]))) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -515,7 +515,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Write` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` [$__range]))) * 100) or vector(0)"
+          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Write` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` [$__range]))) * 100) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -583,7 +583,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | decision_source =~ `user_abort|user_reject` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` [$__range]))) * 100) or vector(0)"
+          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | decision_source =~ `user_abort|user_reject` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` [$__range]))) * 100) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -651,7 +651,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_error` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` [$__range]))) * 100) or vector(0)"
+          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_error` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` [$__range]))) * 100) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -1015,49 +1015,49 @@
       "type": "table",
       "targets": [
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap cost_usd [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap cost_usd [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "Cost",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "APIs",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | prompt_id =~ \".+\" [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | prompt_id =~ \".+\" [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "Tools",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap input_tokens [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap input_tokens [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "InputTok",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap output_tokens [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap output_tokens [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "OutputTok",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "Duration",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "ToolDuration",
           "instant": true
         },
         {
-          "expr": "(max by (prompt_id, session_id) (max_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range])) - min by (prompt_id, session_id) (min_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range]))) / 1000000",
+          "expr": "(max by (prompt_id, session_id) (max_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range])) - min by (prompt_id, session_id) (min_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range]))) / 1000000",
           "legendFormat": "{{prompt_id}}",
           "refId": "TotalDuration",
           "instant": true
@@ -1228,7 +1228,7 @@
       "type": "table",
       "targets": [
         {
-          "expr": "{service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `user_prompt`",
+          "expr": "{service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `user_prompt`",
           "refId": "A"
         }
       ],
@@ -1287,7 +1287,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (model) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cost_usd [5m]))",
+          "expr": "sum by (model) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cost_usd [5m]))",
           "legendFormat": "{{model}}"
         }
       ],
@@ -1331,7 +1331,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max by (model) (quantile_over_time(0.95, {service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap duration_ms [5m]))",
+          "expr": "max by (model) (quantile_over_time(0.95, {service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap duration_ms [5m]))",
           "legendFormat": "{{model}}"
         }
       ],
@@ -1358,6 +1358,312 @@
         }
       },
       "description": "Look for spikes before drilling down into slow prompts or sessions."
+    },
+    {
+      "id": 903,
+      "type": "stat",
+      "title": "5H Spend (USD)",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 37
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[5h])) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      },
+      "description": "Absolute spend for the trailing 5 hours in the selected user/model scope."
+    },
+    {
+      "id": 904,
+      "type": "stat",
+      "title": "7D Spend (USD)",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 37
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[7d])) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      },
+      "description": "Absolute spend for the trailing 7 days in the selected user/model scope."
+    },
+    {
+      "id": 905,
+      "type": "stat",
+      "title": "5H Pace vs 7D Avg (x)",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 37
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "((sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[5h])) or vector(0)) / clamp_min(((sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[7d])) or vector(0)) / 33.6), 0.01))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1.25
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      },
+      "description": "Run-rate card. `1.0x` means the last 5 hours match the trailing 7-day average 5-hour pace."
+    },
+    {
+      "id": 906,
+      "type": "stat",
+      "title": "24H Pace vs 7D Avg (x)",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 37
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "((sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[24h])) or vector(0)) / clamp_min(((sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[7d])) or vector(0)) / 7), 0.01))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1.25
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      },
+      "description": "Run-rate card. `1.0x` means the last 24 hours match the trailing 7-day average daily pace."
+    },
+    {
+      "id": 901,
+      "type": "timeseries",
+      "title": "Weekly Usage Trend (7d)",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 41
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "timeFrom": "7d",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model) (increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[1d]))",
+          "legendFormat": "{{model}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none",
+          "hideZeros": false
+        }
+      },
+      "description": "Fixed 7-day view of rolling daily spend by model for the selected user and model filters."
+    },
+    {
+      "id": 902,
+      "type": "timeseries",
+      "title": "5H Usage Trend",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 41
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "timeFrom": "5h",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model) (increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[5m]))",
+          "legendFormat": "{{model}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none",
+          "hideZeros": false
+        }
+      },
+      "description": "Fixed 5-hour view of short-term spend movement by model for the selected user and model filters."
     }
   ]
 }

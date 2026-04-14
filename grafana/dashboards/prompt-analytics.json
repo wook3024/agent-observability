@@ -117,8 +117,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -141,8 +141,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -165,8 +165,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -189,8 +189,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (model) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (model) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (model) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (model) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -714,73 +714,73 @@
       "type": "table",
       "targets": [
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap cost_usd [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap cost_usd [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "Cost",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "APIs",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_error` | prompt_id =~ \".+\" [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_error` | prompt_id =~ \".+\" [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "Errors",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | prompt_id =~ \".+\" [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | prompt_id =~ \".+\" [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "Tools",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | decision_source =~ `user_abort|user_reject` | prompt_id =~ \".+\" [$__range])) / sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | prompt_id =~ \".+\" [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | decision_source =~ `user_abort|user_reject` | prompt_id =~ \".+\" [$__range])) / sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | prompt_id =~ \".+\" [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "AbortPct",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Read` | prompt_id =~ \".+\" [$__range])) / sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` | prompt_id =~ \".+\" [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Read` | prompt_id =~ \".+\" [$__range])) / sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` | prompt_id =~ \".+\" [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "ReadEdit",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Write` | prompt_id =~ \".+\" [$__range])) / sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` | prompt_id =~ \".+\" [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Write` | prompt_id =~ \".+\" [$__range])) / sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` | prompt_id =~ \".+\" [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "WritePct",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap input_tokens [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap input_tokens [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "InputTok",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap output_tokens [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap output_tokens [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "OutputTok",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "Duration",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
+          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
           "legendFormat": "{{prompt_id}}",
           "refId": "ToolDuration",
           "instant": true
         },
         {
-          "expr": "(max by (prompt_id, session_id) (max_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range])) - min by (prompt_id, session_id) (min_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range]))) / 1000000",
+          "expr": "(max by (prompt_id, session_id) (max_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range])) - min by (prompt_id, session_id) (min_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range]))) / 1000000",
           "legendFormat": "{{prompt_id}}",
           "refId": "TotalDuration",
           "instant": true
@@ -951,7 +951,7 @@
       "type": "table",
       "targets": [
         {
-          "expr": "{service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `user_prompt`",
+          "expr": "{service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `user_prompt`",
           "refId": "A"
         }
       ],

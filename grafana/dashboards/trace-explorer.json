@@ -117,8 +117,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"$user_email\" | session_id =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -382,7 +382,7 @@
             "uid": "P214B5B846CF3925F"
           },
           "queryType": "traceql",
-          "query": "{resource.service.name=\"claude-code\" && span.\"user.email\" =~ \"$user_email\" && span.\"session.id\" =~ \"$session_id\" && trace:duration > ${trace_min_duration} && status = error}",
+          "query": "{resource.service.name=\"claude-code\" && span.\"user.email\" =~ \"($user_email|unknown)\" && span.\"session.id\" =~ \"$session_id\" && trace:duration > ${trace_min_duration} && status = error}",
           "tableType": "traces",
           "limit": 500,
           "refId": "A"
@@ -507,7 +507,7 @@
             "uid": "P214B5B846CF3925F"
           },
           "queryType": "traceql",
-          "query": "{resource.service.name=\"claude-code\" && span.\"user.email\" =~ \"$user_email\" && span.\"session.id\" =~ \"$session_id\" && trace:duration > ${trace_min_duration}}",
+          "query": "{resource.service.name=\"claude-code\" && span.\"user.email\" =~ \"($user_email|unknown)\" && span.\"session.id\" =~ \"$session_id\" && trace:duration > ${trace_min_duration}}",
           "tableType": "traces",
           "limit": 50,
           "refId": "A"
