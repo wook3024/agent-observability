@@ -9,7 +9,7 @@
   "schemaVersion": 39,
   "editable": true,
   "graphTooltip": 1,
-  "refresh": "30s",
+  "refresh": "1m",
   "time": {
     "from": "now-6h",
     "to": "now"
@@ -33,8 +33,8 @@
   },
   "links": [
     {
-      "title": "API Investigation",
-      "url": "/d/cc-api-requests",
+      "title": "Overview",
+      "url": "/d/cc-overview",
       "type": "link",
       "icon": "external link",
       "targetBlank": false,
@@ -42,7 +42,16 @@
       "includeVars": true
     },
     {
-      "title": "Tool Investigation",
+      "title": "Activity & Cost",
+      "url": "/d/cc-activity",
+      "type": "link",
+      "icon": "external link",
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
+    },
+    {
+      "title": "Tools & Edits",
       "url": "/d/cc-tool-analytics",
       "type": "link",
       "icon": "external link",
@@ -51,7 +60,7 @@
       "includeVars": true
     },
     {
-      "title": "Events Investigation",
+      "title": "Events Explorer",
       "url": "/d/cc-events-explorer",
       "type": "link",
       "icon": "external link",
@@ -60,16 +69,7 @@
       "includeVars": true
     },
     {
-      "title": "Prompt Investigation",
-      "url": "/d/cc-prompt-analytics",
-      "type": "link",
-      "icon": "external link",
-      "targetBlank": false,
-      "keepTime": true,
-      "includeVars": true
-    },
-    {
-      "title": "Session Explorer",
+      "title": "Entity Detail",
       "url": "/d/cc-session-explorer",
       "type": "link",
       "icon": "external link",
@@ -90,23 +90,35 @@
   "templating": {
     "list": [
       {
-        "name": "user_email",
-        "label": "User",
-        "type": "query",
-        "datasource": {
-          "type": "prometheus",
-          "uid": "PBFA97CFB590B2093"
-        },
-        "definition": "label_values(claude_code_session_count_total, user_email)",
-        "query": "label_values(claude_code_session_count_total, user_email)",
-        "refresh": 1,
-        "sort": 1,
+        "name": "service",
+        "label": "Service",
+        "type": "custom",
+        "query": "claude-code,claude-code-desktop,claude-code.*",
         "includeAll": false,
-        "allValue": ".*",
         "multi": false,
         "hide": 0,
-        "current": {},
-        "options": []
+        "current": {
+          "text": "claude-code",
+          "value": "claude-code",
+          "selected": true
+        },
+        "options": [
+          {
+            "text": "claude-code",
+            "value": "claude-code",
+            "selected": true
+          },
+          {
+            "text": "claude-code-desktop",
+            "value": "claude-code-desktop",
+            "selected": false
+          },
+          {
+            "text": "both",
+            "value": "claude-code.*",
+            "selected": false
+          }
+        ]
       },
       {
         "name": "session_id",
@@ -116,8 +128,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (session_id) (count_over_time({service_name=~\"$service\"} | session_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (session_id) (count_over_time({service_name=~\"$service\"} | session_id =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -140,8 +152,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (prompt_id) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (prompt_id) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -164,8 +176,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -188,8 +200,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (model) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (model) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (model) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (model) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `api_request` | model =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -218,7 +230,7 @@
         "y": 0
       },
       "options": {
-        "content": "### Executive Overview\nStart here for the fastest answers. Use the summary stats to decide whether you need **API Investigation**, **Tool Investigation**, **Prompt Investigation**, or **Session Explorer**. The canary row highlights regression-style signals before you drill into the tables below. The usage row combines absolute spend with short-term run-rate cards, where `1.0x` means current pace matches the trailing 7-day average pace.",
+        "content": "### Executive Overview — glance, then drill\nThe **canary row** carries regression-style signals built only on telemetry that is actually populated for Claude Code: tool failure rate, cache efficiency, and subagent cost share. Use it to decide where to go next via the nav bar (**Activity & Cost**, **Tools & Edits**, **Events Explorer**, **Entity Detail**, **Trace Explorer**). The **Session Investigation Queue** ranks sessions so you can drill without typing IDs. Absolute spend and run-rate cards live in the collapsed **Run-rate** row at the bottom (those use fixed time windows and ignore the time picker).\n\n_Note: this stack currently has a single user; log `user_email` is always `unknown`, so there is no User filter. `api_error` is not emitted by this Claude Code build — reliability is tracked via tool failures instead._",
         "mode": "markdown"
       }
     },
@@ -228,7 +240,7 @@
       "title": "Sessions in Scope",
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 4,
         "x": 0,
         "y": 3
       },
@@ -239,7 +251,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "count(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" [$__range]))) or vector(0)"
+          "expr": "count(sum by (session_id) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" [$__range]))) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -251,8 +263,8 @@
           },
           "links": [
             {
-              "title": "Open Session Explorer",
-              "url": "/d/cc-session-explorer?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&${__url_time_range}",
+              "title": "Open Entity Detail",
+              "url": "/d/cc-session-explorer?var-service=${service}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&${__url_time_range}",
               "targetBlank": false
             }
           ]
@@ -280,8 +292,8 @@
       "title": "Total Cost in Scope",
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 6,
+        "w": 4,
+        "x": 4,
         "y": 3
       },
       "datasource": {
@@ -291,7 +303,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cost_usd [$__range])) or vector(0)"
+          "expr": "sum(sum_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cost_usd [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -303,8 +315,8 @@
           },
           "links": [
             {
-              "title": "Open Prompt Investigation",
-              "url": "/d/cc-prompt-analytics?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-model=${model}&${__url_time_range}",
+              "title": "Open Activity & Cost",
+              "url": "/d/cc-activity?var-service=${service}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-model=${model}&${__url_time_range}",
               "targetBlank": false
             }
           ]
@@ -324,15 +336,84 @@
         "justifyMode": "auto",
         "textMode": "auto"
       },
-      "description": "Current spend for the active user/session/prompt/model context."
+      "description": "Spend (api_request cost_usd) for the active scope. This honors the time picker; absolute run-rate is in the collapsed row below."
     },
     {
       "id": 3,
       "type": "stat",
+      "title": "Tool Failure Rate",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 3
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `false` [$__range])) / sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range])) * 100) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 15
+              }
+            ]
+          },
+          "links": [
+            {
+              "title": "Open Tools & Edits",
+              "url": "/d/cc-tool-analytics?var-service=${service}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${tool_name}&${__url_time_range}",
+              "targetBlank": false
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      },
+      "description": "Share of tool_result events with success=false. The real reliability canary (baseline ≈ 2.6%); api_error is not emitted by this build."
+    },
+    {
+      "id": 4,
+      "type": "stat",
       "title": "P95 API Latency",
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 4,
         "x": 12,
         "y": 3
       },
@@ -343,7 +424,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(quantile_over_time(0.95, {service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap duration_ms [$__range])) or vector(0)"
+          "expr": "max(quantile_over_time(0.95, {service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap duration_ms [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -355,8 +436,8 @@
           },
           "links": [
             {
-              "title": "Open API Investigation",
-              "url": "/d/cc-api-requests?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-model=${model}&${__url_time_range}",
+              "title": "Open Activity & Cost",
+              "url": "/d/cc-activity?var-service=${service}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-model=${model}&${__url_time_range}",
               "targetBlank": false
             }
           ]
@@ -376,16 +457,16 @@
         "justifyMode": "auto",
         "textMode": "auto"
       },
-      "description": "Use this when the question is “which prompts or sessions were slow?”."
+      "description": "95th percentile api_request duration. With one stream per service this is the service p95 (max collapses multiple services to the worst)."
     },
     {
-      "id": 4,
+      "id": 5,
       "type": "stat",
-      "title": "Tool Success Rate",
+      "title": "Cache Hit Efficiency",
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 18,
+        "w": 4,
+        "x": 16,
         "y": 3
       },
       "datasource": {
@@ -395,20 +476,37 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `true` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range])) * 100) or vector(0)"
+          "expr": "(sum(sum_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cache_read_tokens [$__range])) / (sum(sum_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cache_read_tokens [$__range])) + sum(sum_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap input_tokens [$__range])) + sum(sum_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cache_creation_tokens [$__range]))) * 100) or vector(0)"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
+          "decimals": 1,
           "color": {
-            "mode": "fixed",
-            "fixedColor": "purple"
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 40
+              },
+              {
+                "color": "green",
+                "value": 70
+              }
+            ]
           },
           "links": [
             {
-              "title": "Open Tool Investigation",
-              "url": "/d/cc-tool-analytics?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${tool_name}&${__url_time_range}",
+              "title": "Open Activity & Cost",
+              "url": "/d/cc-activity?var-service=${service}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-model=${model}&${__url_time_range}",
               "targetBlank": false
             }
           ]
@@ -423,20 +521,89 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "auto",
         "textMode": "auto"
       },
-      "description": "Use this when the question is “did a tool fail, or did it just take too long?”."
+      "description": "cache_read / (cache_read + input + cache_creation) tokens. A drop means the prompt cache is being underused, which inflates cost and latency."
     },
     {
-      "id": 7,
+      "id": 6,
       "type": "stat",
-      "title": "Read per Edit/Write",
+      "title": "Subagent Cost Share",
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 4,
+        "x": 20,
+        "y": 3
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(sum_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | query_source =~ `agent:.*` | unwrap cost_usd [$__range])) / sum(sum_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cost_usd [$__range])) * 100) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 40
+              },
+              {
+                "color": "red",
+                "value": 60
+              }
+            ]
+          },
+          "links": [
+            {
+              "title": "Open Activity & Cost",
+              "url": "/d/cc-activity?var-service=${service}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-model=${model}&${__url_time_range}",
+              "targetBlank": false
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      },
+      "description": "Share of api_request cost attributed to query_source=subagent (baseline ≈ 26%). A spike means delegated agents are dominating spend."
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Spend by Model over Time",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
         "x": 0,
         "y": 7
       },
@@ -447,132 +614,49 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Read` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` [$__range]))) or vector(0)"
+          "expr": "sum by (model) (sum_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cost_usd [$__interval]))",
+          "legendFormat": "{{model}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 1
-              },
-              {
-                "color": "green",
-                "value": 3
-              }
-            ]
-          },
-          "links": [
-            {
-              "title": "Open Tool Investigation",
-              "url": "/d/cc-tool-analytics?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${tool_name}&${__url_time_range}",
-              "targetBlank": false
+          "unit": "currencyUSD",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
             }
-          ]
+          }
         },
         "overrides": []
       },
       "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
         },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "Low values suggest the model is editing quickly without enough reading or investigation."
-    },
-    {
-      "id": 8,
-      "type": "stat",
-      "title": "Write Share",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 7
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Write` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` [$__range]))) * 100) or vector(0)"
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": false
         }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 15
-              },
-              {
-                "color": "red",
-                "value": 30
-              }
-            ]
-          },
-          "links": [
-            {
-              "title": "Open Tool Investigation",
-              "url": "/d/cc-tool-analytics?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${tool_name}&${__url_time_range}",
-              "targetBlank": false
-            }
-          ]
-        },
-        "overrides": []
       },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "A rising Write share can be a rewrite-style regression signal compared with normal edit-heavy behavior."
+      "description": "Spend split by model. Uses the dashboard time picker at $__interval resolution."
     },
     {
-      "id": 9,
-      "type": "stat",
-      "title": "Abort/Reject Rate",
+      "id": 11,
+      "type": "timeseries",
+      "title": "Tool Failures by Tool over Time",
       "gridPos": {
-        "h": 4,
-        "w": 6,
+        "h": 8,
+        "w": 12,
         "x": 12,
         "y": 7
       },
@@ -583,124 +667,41 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | decision_source =~ `user_abort|user_reject` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` [$__range]))) * 100) or vector(0)"
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `false` [$__interval]))",
+          "legendFormat": "{{tool_name}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 3
-              },
-              {
-                "color": "red",
-                "value": 8
-              }
-            ]
-          },
-          "links": [
-            {
-              "title": "Open Tool Investigation",
-              "url": "/d/cc-tool-analytics?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${tool_name}&${__url_time_range}",
-              "targetBlank": false
+          "unit": "short",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
             }
-          ]
+          }
         },
         "overrides": []
       },
       "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
         },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "User abort/reject decisions act as a proxy for visible dissatisfaction with tool behavior."
-    },
-    {
-      "id": 10,
-      "type": "stat",
-      "title": "API Error Rate",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 7
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_error` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` [$__range]))) * 100) or vector(0)"
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": true
         }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 5
-              }
-            ]
-          },
-          "links": [
-            {
-              "title": "Open API Investigation",
-              "url": "/d/cc-api-requests?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-model=${model}&${__url_time_range}",
-              "targetBlank": false
-            }
-          ]
-        },
-        "overrides": []
       },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "Error rate based on explicit `api_error` events. Use this to spot rate-limit or server-side regressions quickly."
+      "description": "Failed tool executions (success=false) by tool over time. Spikes point to a specific failing tool — drill via Tools & Edits."
     },
     {
       "datasource": {
@@ -719,23 +720,27 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "prompt_id"
+              "options": "session_id"
             },
             "properties": [
               {
-                "id": "custom.width",
-                "value": 130
+                "id": "displayName",
+                "value": "Session ID"
               },
               {
-                "id": "displayName",
-                "value": "Prompt ID"
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
               },
               {
                 "id": "links",
                 "value": [
                   {
-                    "title": "Open Prompt Detail",
-                    "url": "/d/cc-prompt-detail?var-user_email=${user_email}&var-session_id=${__data.fields.session_id}&var-prompt_id=${__value.text}&${__url_time_range}",
+                    "title": "Open Entity Detail",
+                    "url": "/d/cc-session-explorer?var-service=${service}&var-session_id=${__value.text}&${__url_time_range}",
                     "targetBlank": false
                   }
                 ]
@@ -750,7 +755,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Total Cost (USD)"
+                "value": "Cost (USD)"
               },
               {
                 "id": "unit",
@@ -777,15 +782,15 @@
                     },
                     {
                       "color": "dark-yellow",
-                      "value": 0.5
+                      "value": 1
                     },
                     {
                       "color": "dark-orange",
-                      "value": 2
+                      "value": 5
                     },
                     {
                       "color": "dark-red",
-                      "value": 5
+                      "value": 15
                     }
                   ]
                 }
@@ -804,7 +809,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 110
               }
             ]
           },
@@ -816,23 +821,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Tools"
-              },
-              {
-                "id": "custom.width",
-                "value": 70
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value #InputTok"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Input Tokens"
+                "value": "Tool Calls"
               },
               {
                 "id": "custom.width",
@@ -843,76 +832,16 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #OutputTok"
+              "options": "Value #Failures"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Output Tokens"
+                "value": "Tool Failures"
               },
               {
                 "id": "custom.width",
-                "value": 110
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value #Duration"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "API Duration Sum"
-              },
-              {
-                "id": "unit",
-                "value": "ms"
-              },
-              {
-                "id": "custom.width",
-                "value": 100
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value #ToolDuration"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Tool Duration Sum"
-              },
-              {
-                "id": "unit",
-                "value": "ms"
-              },
-              {
-                "id": "custom.width",
-                "value": 100
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value #TotalDuration"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Wall Time"
-              },
-              {
-                "id": "unit",
-                "value": "ms"
-              },
-              {
-                "id": "custom.width",
-                "value": 110
+                "value": 130
               },
               {
                 "id": "custom.cellOptions",
@@ -930,66 +859,32 @@
                       "value": null
                     },
                     {
-                      "color": "dark-yellow",
-                      "value": 60000
-                    },
-                    {
                       "color": "dark-orange",
-                      "value": 300000
+                      "value": 1
                     },
                     {
                       "color": "dark-red",
-                      "value": 600000
+                      "value": 5
                     }
                   ]
                 }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "session_id"
-            },
-            "properties": [
-              {
-                "id": "custom.hidden",
-                "value": true
-              },
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Open Session Explorer",
-                    "url": "/d/cc-session-explorer?var-user_email=${user_email}&var-session_id=${__value.text}&var-prompt_id=${__data.fields.prompt_id}&${__url_time_range}",
-                    "targetBlank": false
-                  }
-                ]
-              },
-              {
-                "id": "displayName",
-                "value": "Session ID"
-              },
-              {
-                "id": "custom.width",
-                "value": 170
               }
             ]
           }
         ]
       },
       "gridPos": {
-        "h": 10,
+        "h": 9,
         "w": 24,
         "x": 0,
-        "y": 11
+        "y": 15
       },
-      "id": 1,
+      "id": 20,
       "options": {
         "showHeader": true,
         "sortBy": [
           {
-            "displayName": "Total Cost (USD)",
+            "displayName": "Cost (USD)",
             "desc": true
           }
         ],
@@ -1002,64 +897,36 @@
             "Value #Cost",
             "Value #APIs",
             "Value #Tools",
-            "Value #InputTok",
-            "Value #OutputTok",
-            "Value #Duration",
-            "Value #ToolDuration",
-            "Value #TotalDuration"
+            "Value #Failures"
           ]
         }
       },
-      "title": "Prompt Investigation Queue",
-      "description": "Use this table to jump directly into prompt or session detail without typing IDs.",
+      "title": "Session Investigation Queue",
+      "description": "Sessions ranked by cost, with API/tool volume and tool failures. Click a Session ID to open Entity Detail.",
       "type": "table",
       "targets": [
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap cost_usd [$__range]))",
-          "legendFormat": "{{prompt_id}}",
+          "expr": "sum by (session_id) (sum_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | model=~\"$model\" | event_name = `api_request` | session_id =~ \".+\" | unwrap cost_usd [$__range]))",
+          "legendFormat": "{{session_id}}",
           "refId": "Cost",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" [$__range]))",
-          "legendFormat": "{{prompt_id}}",
+          "expr": "sum by (session_id) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | model=~\"$model\" | event_name = `api_request` | session_id =~ \".+\" [$__range]))",
+          "legendFormat": "{{session_id}}",
           "refId": "APIs",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | prompt_id =~ \".+\" [$__range]))",
-          "legendFormat": "{{prompt_id}}",
+          "expr": "sum by (session_id) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | session_id =~ \".+\" [$__range]))",
+          "legendFormat": "{{session_id}}",
           "refId": "Tools",
           "instant": true
         },
         {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap input_tokens [$__range]))",
-          "legendFormat": "{{prompt_id}}",
-          "refId": "InputTok",
-          "instant": true
-        },
-        {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap output_tokens [$__range]))",
-          "legendFormat": "{{prompt_id}}",
-          "refId": "OutputTok",
-          "instant": true
-        },
-        {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
-          "legendFormat": "{{prompt_id}}",
-          "refId": "Duration",
-          "instant": true
-        },
-        {
-          "expr": "sum by (prompt_id, session_id) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | prompt_id =~ \".+\" | unwrap duration_ms [$__range]))",
-          "legendFormat": "{{prompt_id}}",
-          "refId": "ToolDuration",
-          "instant": true
-        },
-        {
-          "expr": "(max by (prompt_id, session_id) (max_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range])) - min by (prompt_id, session_id) (min_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | prompt_id =~ \".+\" | unwrap observed_timestamp [$__range]))) / 1000000",
-          "legendFormat": "{{prompt_id}}",
-          "refId": "TotalDuration",
+          "expr": "sum by (session_id) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `false` | session_id =~ \".+\" [$__range]))",
+          "legendFormat": "{{session_id}}",
+          "refId": "Failures",
           "instant": true
         }
       ],
@@ -1082,588 +949,324 @@
       ]
     },
     {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "left",
-            "filterable": true,
-            "inspect": true
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "event_sequence"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 50
-              },
-              {
-                "id": "displayName",
-                "value": "#"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "event_timestamp"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 170
-              },
-              {
-                "id": "displayName",
-                "value": "Time"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "prompt"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 500
-              },
-              {
-                "id": "displayName",
-                "value": "Prompt"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "prompt_id"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 130
-              },
-              {
-                "id": "displayName",
-                "value": "Prompt ID"
-              },
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Open Prompt Detail",
-                    "url": "/d/cc-prompt-detail?var-user_email=${user_email}&var-session_id=${__data.fields.session_id}&var-prompt_id=${__value.text}&${__url_time_range}",
-                    "targetBlank": false
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "session_id"
-            },
-            "properties": [
-              {
-                "id": "custom.hidden",
-                "value": true
-              },
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Open Session Explorer",
-                    "url": "/d/cc-session-explorer?var-user_email=${user_email}&var-session_id=${__value.text}&var-prompt_id=${__data.fields.prompt_id}&${__url_time_range}",
-                    "targetBlank": false
-                  }
-                ]
-              },
-              {
-                "id": "displayName",
-                "value": "Session ID"
-              },
-              {
-                "id": "custom.width",
-                "value": 170
-              }
-            ]
-          }
-        ]
-      },
+      "id": 800,
+      "type": "row",
+      "title": "Run-rate (Prometheus · fixed windows, ignores time picker)",
+      "collapsed": true,
       "gridPos": {
-        "h": 8,
+        "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 24
       },
-      "id": 2,
-      "options": {
-        "showHeader": true,
-        "sortBy": [
-          {
-            "displayName": "#",
-            "desc": true
-          }
-        ],
-        "footer": {
-          "show": true,
-          "reducer": [
-            "count"
-          ],
-          "countRows": true
-        }
-      },
-      "title": "Recent User Prompts",
-      "type": "table",
-      "targets": [
+      "panels": [
         {
-          "expr": "{service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `user_prompt`",
-          "refId": "A"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "labels",
-            "format": "auto"
-          }
-        },
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "event_sequence",
-                "event_timestamp",
-                "prompt",
-                "prompt_id",
-                "session_id"
-              ]
+          "id": 801,
+          "type": "stat",
+          "title": "5H Spend (USD)",
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 25
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(increase(claude_code_cost_usage_USD_total{exported_job=~\"$service\", model=~\"$model\"}[5h])) or vector(0)"
             }
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "indexByName": {
-              "event_sequence": 0,
-              "event_timestamp": 1,
-              "prompt": 2,
-              "prompt_id": 3,
-              "session_id": 4
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "currencyUSD",
+              "color": {
+                "mode": "fixed",
+                "fixedColor": "green"
+              }
             },
-            "excludeByName": {}
-          }
-        }
-      ],
-      "description": "Recent prompts in scope. Prompt ID drills into prompt detail, and Session ID drills into the session journey."
-    },
-    {
-      "id": 5,
-      "type": "timeseries",
-      "title": "Spend by Model over Time",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 29
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum by (model) (sum_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap cost_usd [5m]))",
-          "legendFormat": "{{model}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none",
-          "hideZeros": false
-        }
-      },
-      "description": "Use this to see which model changed spend most recently."
-    },
-    {
-      "id": 6,
-      "type": "timeseries",
-      "title": "Latency by Model over Time",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 29
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max by (model) (quantile_over_time(0.95, {service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | model=~\"$model\" | event_name = `api_request` | unwrap duration_ms [5m]))",
-          "legendFormat": "{{model}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
+            "overrides": []
           },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none",
-          "hideZeros": false
-        }
-      },
-      "description": "Look for spikes before drilling down into slow prompts or sessions."
-    },
-    {
-      "id": 903,
-      "type": "stat",
-      "title": "5H Spend (USD)",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 37
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[5h])) or vector(0)"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "currencyUSD",
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "green"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "Absolute spend for the trailing 5 hours in the selected user/model scope."
-    },
-    {
-      "id": 904,
-      "type": "stat",
-      "title": "7D Spend (USD)",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 37
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[7d])) or vector(0)"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "currencyUSD",
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "blue"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "Absolute spend for the trailing 7 days in the selected user/model scope."
-    },
-    {
-      "id": 905,
-      "type": "stat",
-      "title": "5H Pace vs 7D Avg (x)",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
-        "y": 37
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "((sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[5h])) or vector(0)) / clamp_min(((sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[7d])) or vector(0)) / 33.6), 0.01))"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 2,
-          "color": {
-            "mode": "thresholds"
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "auto"
           },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 1.25
-              },
-              {
-                "color": "red",
-                "value": 2
+          "description": "Absolute spend for the trailing 5 hours (Prometheus counter, fixed window)."
+        },
+        {
+          "id": 802,
+          "type": "stat",
+          "title": "7D Spend (USD)",
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 6,
+            "y": 25
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(increase(claude_code_cost_usage_USD_total{exported_job=~\"$service\", model=~\"$model\"}[7d])) or vector(0)"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "currencyUSD",
+              "color": {
+                "mode": "fixed",
+                "fixedColor": "blue"
               }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "Run-rate card. `1.0x` means the last 5 hours match the trailing 7-day average 5-hour pace."
-    },
-    {
-      "id": 906,
-      "type": "stat",
-      "title": "24H Pace vs 7D Avg (x)",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 37
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "((sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[24h])) or vector(0)) / clamp_min(((sum(increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[7d])) or vector(0)) / 7), 0.01))"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 2,
-          "color": {
-            "mode": "thresholds"
+            },
+            "overrides": []
           },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "auto"
+          },
+          "description": "Absolute spend for the trailing 7 days (Prometheus counter, fixed window)."
+        },
+        {
+          "id": 803,
+          "type": "stat",
+          "title": "5H Pace vs 7D Avg (x)",
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 12,
+            "y": 25
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "((sum(increase(claude_code_cost_usage_USD_total{exported_job=~\"$service\", model=~\"$model\"}[5h])) or vector(0)) / clamp_min(((sum(increase(claude_code_cost_usage_USD_total{exported_job=~\"$service\", model=~\"$model\"}[7d])) or vector(0)) / 33.6), 0.01))"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "decimals": 2,
+              "color": {
+                "mode": "thresholds"
               },
-              {
-                "color": "yellow",
-                "value": 1.25
-              },
-              {
-                "color": "red",
-                "value": 2
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1.25
+                  },
+                  {
+                    "color": "red",
+                    "value": 2
+                  }
+                ]
               }
-            ]
-          }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "auto"
+          },
+          "description": "Run-rate card. 1.0x means the last 5 hours match the trailing 7-day average 5-hour pace."
         },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
+        {
+          "id": 804,
+          "type": "stat",
+          "title": "24H Pace vs 7D Avg (x)",
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 18,
+            "y": 25
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "((sum(increase(claude_code_cost_usage_USD_total{exported_job=~\"$service\", model=~\"$model\"}[24h])) or vector(0)) / clamp_min(((sum(increase(claude_code_cost_usage_USD_total{exported_job=~\"$service\", model=~\"$model\"}[7d])) or vector(0)) / 7), 0.01))"
+            }
           ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "Run-rate card. `1.0x` means the last 24 hours match the trailing 7-day average daily pace."
-    },
-    {
-      "id": 901,
-      "type": "timeseries",
-      "title": "Weekly Usage Trend (7d)",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 41
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "timeFrom": "7d",
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum by (model) (increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[1d]))",
-          "legendFormat": "{{model}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "decimals": 2,
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1.25
+                  },
+                  {
+                    "color": "red",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "overrides": []
           },
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none",
-          "hideZeros": false
-        }
-      },
-      "description": "Fixed 7-day view of rolling daily spend by model for the selected user and model filters."
-    },
-    {
-      "id": 902,
-      "type": "timeseries",
-      "title": "5H Usage Trend",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 41
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "timeFrom": "5h",
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum by (model) (increase(claude_code_cost_usage_USD_total{exported_job=\"claude-code\", user_email=~\"$user_email\", model=~\"$model\"}[5m]))",
-          "legendFormat": "{{model}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "auto"
           },
-          "unit": "currencyUSD"
+          "description": "Run-rate card. 1.0x means the last 24 hours match the trailing 7-day average daily pace."
         },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
+        {
+          "id": 805,
+          "type": "timeseries",
+          "title": "Weekly Usage Trend (7d)",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 29
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "timeFrom": "7d",
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (model) (increase(claude_code_cost_usage_USD_total{exported_job=~\"$service\", model=~\"$model\"}[1d]))",
+              "legendFormat": "{{model}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true,
+              "calcs": []
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none",
+              "hideZeros": false
+            }
+          },
+          "description": "Fixed 7-day view of rolling daily spend by model."
         },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none",
-          "hideZeros": false
+        {
+          "id": 806,
+          "type": "timeseries",
+          "title": "5H Usage Trend",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 29
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "timeFrom": "5h",
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (model) (increase(claude_code_cost_usage_USD_total{exported_job=~\"$service\", model=~\"$model\"}[5m]))",
+              "legendFormat": "{{model}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true,
+              "calcs": []
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none",
+              "hideZeros": false
+            }
+          },
+          "description": "Fixed 5-hour view of short-term spend movement by model."
         }
-      },
-      "description": "Fixed 5-hour view of short-term spend movement by model for the selected user and model filters."
+      ]
     }
   ]
 }

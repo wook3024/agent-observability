@@ -1,16 +1,15 @@
 {
   "uid": "cc-tool-analytics",
-  "title": "Claude Code - Investigation Hub: Tool Analytics",
+  "title": "Claude Code - Tools & Edits",
   "tags": [
     "claude-code",
-    "tools",
-    "hub"
+    "tools"
   ],
   "timezone": "browser",
   "schemaVersion": 39,
   "editable": true,
   "graphTooltip": 1,
-  "refresh": "30s",
+  "refresh": "1m",
   "time": {
     "from": "now-6h",
     "to": "now"
@@ -34,7 +33,7 @@
   },
   "links": [
     {
-      "title": "Executive Overview",
+      "title": "Overview",
       "url": "/d/cc-overview",
       "type": "link",
       "icon": "external link",
@@ -43,8 +42,8 @@
       "includeVars": true
     },
     {
-      "title": "API Investigation",
-      "url": "/d/cc-api-requests",
+      "title": "Activity & Cost",
+      "url": "/d/cc-activity",
       "type": "link",
       "icon": "external link",
       "targetBlank": false,
@@ -52,7 +51,16 @@
       "includeVars": true
     },
     {
-      "title": "Events Investigation",
+      "title": "Tools & Edits",
+      "url": "/d/cc-tool-analytics",
+      "type": "link",
+      "icon": "external link",
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
+    },
+    {
+      "title": "Events Explorer",
       "url": "/d/cc-events-explorer",
       "type": "link",
       "icon": "external link",
@@ -61,16 +69,7 @@
       "includeVars": true
     },
     {
-      "title": "Prompt Investigation",
-      "url": "/d/cc-prompt-analytics",
-      "type": "link",
-      "icon": "external link",
-      "targetBlank": false,
-      "keepTime": true,
-      "includeVars": true
-    },
-    {
-      "title": "Session Explorer",
+      "title": "Entity Detail",
       "url": "/d/cc-session-explorer",
       "type": "link",
       "icon": "external link",
@@ -91,23 +90,35 @@
   "templating": {
     "list": [
       {
-        "name": "user_email",
-        "label": "User",
-        "type": "query",
-        "datasource": {
-          "type": "prometheus",
-          "uid": "PBFA97CFB590B2093"
-        },
-        "definition": "label_values(claude_code_session_count_total, user_email)",
-        "query": "label_values(claude_code_session_count_total, user_email)",
-        "refresh": 1,
-        "sort": 1,
+        "name": "service",
+        "label": "Service",
+        "type": "custom",
+        "query": "claude-code,claude-code-desktop,claude-code.*",
         "includeAll": false,
-        "allValue": ".*",
         "multi": false,
         "hide": 0,
-        "current": {},
-        "options": []
+        "current": {
+          "text": "claude-code",
+          "value": "claude-code",
+          "selected": true
+        },
+        "options": [
+          {
+            "text": "claude-code",
+            "value": "claude-code",
+            "selected": true
+          },
+          {
+            "text": "claude-code-desktop",
+            "value": "claude-code-desktop",
+            "selected": false
+          },
+          {
+            "text": "both",
+            "value": "claude-code.*",
+            "selected": false
+          }
+        ]
       },
       {
         "name": "session_id",
@@ -117,8 +128,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (session_id) (count_over_time({service_name=~\"$service\"} | session_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (session_id) (count_over_time({service_name=~\"$service\"} | session_id =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -141,8 +152,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (prompt_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (prompt_id) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (prompt_id) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -165,8 +176,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -195,17 +206,17 @@
         "y": 0
       },
       "options": {
-        "content": "### Tool Investigation\nUse this dashboard when a session feels stuck or a tool seems unreliable. The canary row highlights reading, rewriting, and user-intervention signals before you drop into the funnel table or raw execution detail.",
+        "content": "### Tools & Edits\nUse this dashboard when a session feels stuck or a tool seems unreliable. The **canary row** carries tool-execution health signals built only on telemetry that is actually populated: failure rate (success=false ≈ 3%), success rate, P95 tool duration, and edit-discipline ratios (Read per Edit/Write, Write share). The **funnel table** shows where work stops (decision → execution → success), **Failed Tool Runs** lists the real `error` text, and **Repeated File Edits** flags files rewritten many times. Code-edit language stats come from Prometheus and are **account-level** (no session/prompt scope).\n\n_Note: this build has a single user (`user_email` always `unknown`, so no User filter). `decision_source` only ever takes `config` or `user_temporary` here — there is no user_abort/user_reject signal, so no abort/reject panel._",
         "mode": "markdown"
       }
     },
     {
-      "id": 10,
+      "id": 1,
       "type": "stat",
-      "title": "Total Decisions",
+      "title": "Total Executions",
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 4,
         "x": 0,
         "y": 3
       },
@@ -216,7 +227,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_decision` [$__range])) or vector(0)"
+          "expr": "sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -225,7 +236,14 @@
           "color": {
             "mode": "fixed",
             "fixedColor": "blue"
-          }
+          },
+          "links": [
+            {
+              "title": "Open Events Explorer",
+              "url": "/d/cc-events-explorer?var-service=${service}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&${__url_time_range}",
+              "targetBlank": false
+            }
+          ]
         },
         "overrides": []
       },
@@ -242,16 +260,16 @@
         "justifyMode": "auto",
         "textMode": "auto"
       },
-      "description": "How often tools were selected in the current scope."
+      "description": "How many tool_result events ran in the current scope."
     },
     {
-      "id": 1,
+      "id": 2,
       "type": "stat",
-      "title": "Total Executions",
+      "title": "Tool Failure Rate",
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 6,
+        "w": 4,
+        "x": 4,
         "y": 3
       },
       "datasource": {
@@ -261,15 +279,78 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range])) or vector(0)"
+          "expr": "(sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `false` [$__range])) / sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range])) * 100) or vector(0)"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "percent",
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 15
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      },
+      "description": "Share of tool_result events with success=false. The real reliability canary (baseline ≈ 2.6%)."
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Success Rate",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 3
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `true` [$__range])) / sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range])) * 100) or vector(0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
           "color": {
             "mode": "fixed",
-            "fixedColor": "blue"
+            "fixedColor": "green"
           }
         },
         "overrides": []
@@ -287,15 +368,15 @@
         "justifyMode": "auto",
         "textMode": "auto"
       },
-      "description": "How often selected tools actually ran."
+      "description": "Share of tool_result events with success=true. Fastest way to answer “did it fail?”"
     },
     {
-      "id": 2,
+      "id": 4,
       "type": "stat",
-      "title": "Success Rate",
+      "title": "P95 Tool Duration",
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 4,
         "x": 12,
         "y": 3
       },
@@ -306,53 +387,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `true` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range])) * 100) or vector(0)"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "blue"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "Fastest way to answer “did it fail?”"
-    },
-    {
-      "id": 3,
-      "type": "stat",
-      "title": "P95 Duration",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 3
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(quantile_over_time(0.95, {service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | unwrap duration_ms [$__range])) or vector(0)",
-          "instant": true
+          "expr": "max(quantile_over_time(0.95, {service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | unwrap duration_ms [$__range])) or vector(0)"
         }
       ],
       "fieldConfig": {
@@ -378,17 +413,17 @@
         "justifyMode": "auto",
         "textMode": "auto"
       },
-      "description": "Fastest way to answer “was it slow?”"
+      "description": "95th percentile tool_result duration_ms. With one stream per service this is the service p95 (max collapses multiple services to the worst). Fastest way to answer “was it slow?”"
     },
     {
-      "id": 11,
+      "id": 5,
       "type": "stat",
       "title": "Read per Edit/Write",
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 7
+        "w": 4,
+        "x": 16,
+        "y": 3
       },
       "datasource": {
         "type": "loki",
@@ -397,12 +432,13 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Read` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` [$__range]))) or vector(0)"
+          "expr": "(sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Read` [$__range])) / sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` [$__range]))) or vector(0)"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "short",
+          "decimals": 1,
           "color": {
             "mode": "thresholds"
           },
@@ -439,17 +475,17 @@
         "justifyMode": "auto",
         "textMode": "auto"
       },
-      "description": "Low values suggest the model is editing before it has read enough context."
+      "description": "Read executions per Edit/Write. Low values suggest the model is editing before it has read enough context."
     },
     {
-      "id": 12,
+      "id": 6,
       "type": "stat",
       "title": "Write Share",
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 7
+        "w": 4,
+        "x": 20,
+        "y": 3
       },
       "datasource": {
         "type": "loki",
@@ -458,12 +494,13 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Write` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` [$__range]))) * 100) or vector(0)"
+          "expr": "((sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Write` [$__range])) / sum(count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` [$__range]))) * 100) or vector(0)"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
+          "decimals": 1,
           "color": {
             "mode": "thresholds"
           },
@@ -500,139 +537,17 @@
         "justifyMode": "auto",
         "textMode": "auto"
       },
-      "description": "A high Write share can indicate rewrite-heavy behavior instead of normal targeted edits."
+      "description": "Write as a share of all Edit/Write executions. A high Write share can indicate rewrite-heavy behavior instead of targeted edits."
     },
     {
-      "id": 13,
-      "type": "stat",
-      "title": "Abort/Reject Rate",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
-        "y": 7
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "((sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | decision_source =~ `user_abort|user_reject` [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` [$__range]))) * 100) or vector(0)"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 3
-              },
-              {
-                "color": "red",
-                "value": 8
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "User abort/reject is a direct proxy for visible dissatisfaction with tool behavior."
-    },
-    {
-      "id": 14,
-      "type": "stat",
-      "title": "Median Read Size",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 7
-      },
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(quantile_over_time(0.5, {service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name = `Read` | unwrap tool_result_size_bytes [$__range])) or vector(0)"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "decbytes",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 1024
-              },
-              {
-                "color": "green",
-                "value": 8192
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "Small read results can indicate shallow investigation even when Read is technically being used."
-    },
-    {
-      "id": 5,
+      "id": 10,
       "type": "timeseries",
-      "title": "Execution Count over Time",
+      "title": "Execution Count by Tool",
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 11
+        "y": 7
       },
       "datasource": {
         "type": "loki",
@@ -641,7 +556,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [5m]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__interval]))",
           "legendFormat": "{{tool_name}}"
         }
       ],
@@ -649,6 +564,15 @@
         "defaults": {
           "color": {
             "mode": "palette-classic"
+          },
+          "unit": "short",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
           }
         },
         "overrides": []
@@ -662,21 +586,21 @@
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "none",
-          "hideZeros": false
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "description": "Look for execution bursts before drilling into individual runs."
+      "description": "Tool execution volume by tool over time. Look for execution bursts before drilling into individual runs."
     },
     {
-      "id": 6,
+      "id": 11,
       "type": "timeseries",
-      "title": "P95 Duration over Time",
+      "title": "Failures by Tool",
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 11
+        "y": 7
       },
       "datasource": {
         "type": "loki",
@@ -685,7 +609,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max by (tool_name) (quantile_over_time(0.95, {service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | unwrap duration_ms [5m]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `false` [$__interval]))",
           "legendFormat": "{{tool_name}}"
         }
       ],
@@ -694,7 +618,15 @@
           "color": {
             "mode": "palette-classic"
           },
-          "unit": "ms"
+          "unit": "short",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
         },
         "overrides": []
       },
@@ -707,21 +639,21 @@
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "none",
-          "hideZeros": false
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "description": "Use this to spot which tool slowed down."
+      "description": "Failed tool executions (success=false) by tool over time. Spikes point to a specific failing tool."
     },
     {
-      "id": 700,
+      "id": 20,
       "type": "table",
       "title": "Decision → Execution → Success Funnel by Tool",
       "gridPos": {
         "h": 10,
-        "w": 12,
+        "w": 24,
         "x": 0,
-        "y": 19
+        "y": 15
       },
       "datasource": {
         "type": "loki",
@@ -730,22 +662,26 @@
       "targets": [
         {
           "refId": "Decisions",
-          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_decision` [$__range]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_decision` [$__range]))",
+          "legendFormat": "{{tool_name}}",
           "instant": true
         },
         {
           "refId": "Executions",
-          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range]))",
+          "legendFormat": "{{tool_name}}",
           "instant": true
         },
         {
           "refId": "Success",
-          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `true` [$__range]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `true` [$__range]))",
+          "legendFormat": "{{tool_name}}",
           "instant": true
         },
         {
           "refId": "Failures",
-          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `false` [$__range]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `false` [$__range]))",
+          "legendFormat": "{{tool_name}}",
           "instant": true
         }
       ],
@@ -770,14 +706,18 @@
               },
               {
                 "id": "custom.width",
-                "value": 160
+                "value": 200
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
               },
               {
                 "id": "links",
                 "value": [
                   {
-                    "title": "Filter Tool Investigation by tool",
-                    "url": "/d/cc-tool-analytics?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${__value.text}&${__url_time_range}",
+                    "title": "Filter by this tool",
+                    "url": "/d/cc-tool-analytics?var-service=${service}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${__value.text}&${__url_time_range}",
                     "targetBlank": false
                   }
                 ]
@@ -793,6 +733,10 @@
               {
                 "id": "displayName",
                 "value": "Decisions"
+              },
+              {
+                "id": "custom.width",
+                "value": 140
               }
             ]
           },
@@ -805,6 +749,10 @@
               {
                 "id": "displayName",
                 "value": "Executions"
+              },
+              {
+                "id": "custom.width",
+                "value": 140
               }
             ]
           },
@@ -817,6 +765,10 @@
               {
                 "id": "displayName",
                 "value": "Success"
+              },
+              {
+                "id": "custom.width",
+                "value": 140
               }
             ]
           },
@@ -829,6 +781,36 @@
               {
                 "id": "displayName",
                 "value": "Failures"
+              },
+              {
+                "id": "custom.width",
+                "value": 140
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "transparent",
+                      "value": null
+                    },
+                    {
+                      "color": "dark-orange",
+                      "value": 1
+                    },
+                    {
+                      "color": "dark-red",
+                      "value": 5
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -836,16 +818,26 @@
       },
       "options": {
         "showHeader": true,
-        "sortBy": [],
+        "sortBy": [
+          {
+            "displayName": "Executions",
+            "desc": true
+          }
+        ],
         "footer": {
           "show": true,
           "reducer": [
-            "count"
+            "sum"
           ],
-          "countRows": true
+          "fields": [
+            "Value #Decisions",
+            "Value #Executions",
+            "Value #Success",
+            "Value #Failures"
+          ]
         }
       },
-      "description": "This table shows where tool work stops so you know whether to inspect decisions, executions, or failures next.",
+      "description": "Where tool work stops: decisions (tool_decision) vs executions (tool_result) vs success vs failures, per tool. Click a tool to scope the dashboard.",
       "transformations": [
         {
           "id": "merge",
@@ -856,16 +848,34 @@
           "options": {
             "excludeByName": {
               "Time": true
+            },
+            "indexByName": {
+              "tool_name": 0
             }
           }
         }
       ]
     },
     {
+      "id": 30,
+      "type": "table",
+      "title": "Failed Tool Runs",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
       "datasource": {
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` | success = `false`"
+        }
+      ],
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -874,25 +884,9 @@
               "type": "auto"
             },
             "filterable": true,
-            "footer": {
-              "reducers": []
-            },
             "inspect": false
           },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
+          "mappings": []
         },
         "overrides": [
           {
@@ -923,14 +917,14 @@
               },
               {
                 "id": "custom.width",
-                "value": 140
+                "value": 120
               },
               {
                 "id": "links",
                 "value": [
                   {
-                    "title": "Filter Tool Investigation by tool",
-                    "url": "/d/cc-tool-analytics?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${__value.text}&${__url_time_range}",
+                    "title": "Filter by this tool",
+                    "url": "/d/cc-tool-analytics?var-service=${service}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${__value.text}&${__url_time_range}",
                     "targetBlank": false
                   }
                 ]
@@ -940,16 +934,20 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "success"
+              "options": "error"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Success"
+                "value": "Error"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
               },
               {
                 "id": "custom.width",
-                "value": 80
+                "value": 520
               }
             ]
           },
@@ -964,8 +962,12 @@
                 "value": "Duration (ms)"
               },
               {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
                 "id": "custom.width",
-                "value": 110
+                "value": 120
               }
             ]
           },
@@ -976,22 +978,22 @@
             },
             "properties": [
               {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Open Prompt Detail",
-                    "url": "/d/cc-prompt-detail?var-user_email=${user_email}&var-session_id=${__data.fields.session_id}&var-prompt_id=${__value.text}&${__url_time_range}",
-                    "targetBlank": false
-                  }
-                ]
-              },
-              {
                 "id": "displayName",
                 "value": "Prompt ID"
               },
               {
                 "id": "custom.width",
-                "value": 170
+                "value": 200
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open Entity Detail",
+                    "url": "/d/cc-session-explorer?var-service=${service}&var-session_id=${__data.fields.session_id}&var-prompt_id=${__value.text}&${__url_time_range}",
+                    "targetBlank": false
+                  }
+                ]
               }
             ]
           },
@@ -1002,34 +1004,27 @@
             },
             "properties": [
               {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Open Session Explorer",
-                    "url": "/d/cc-session-explorer?var-user_email=${user_email}&var-session_id=${__value.text}&var-prompt_id=${__data.fields.prompt_id}&${__url_time_range}",
-                    "targetBlank": false
-                  }
-                ]
-              },
-              {
                 "id": "displayName",
                 "value": "Session ID"
               },
               {
                 "id": "custom.width",
-                "value": 170
+                "value": 200
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open Entity Detail",
+                    "url": "/d/cc-session-explorer?var-service=${service}&var-session_id=${__value.text}&var-prompt_id=${__data.fields.prompt_id}&${__url_time_range}",
+                    "targetBlank": false
+                  }
+                ]
               }
             ]
           }
         ]
       },
-      "gridPos": {
-        "h": 10,
-        "w": 12,
-        "x": 12,
-        "y": 19
-      },
-      "id": 701,
       "options": {
         "cellHeight": "sm",
         "showHeader": true,
@@ -1041,13 +1036,7 @@
         ]
       },
       "pluginVersion": "12.4.2",
-      "targets": [
-        {
-          "expr": "{service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result`",
-          "refId": "A"
-        }
-      ],
-      "title": "Slow or Failed Tool Runs",
+      "description": "Every tool_result with success=false, showing the real `error` text. Sort by Duration or Time to triage the worst failures. Click a Session/Prompt to open Entity Detail.",
       "transformations": [
         {
           "id": "extractFields",
@@ -1062,16 +1051,18 @@
             "excludeByName": {
               "Line": true,
               "Time": true,
+              "id": true,
+              "labels": true,
+              "tsNs": true,
               "__error__": true,
               "__error_details__": true,
               "app_version": true,
               "decision_source": true,
               "decision_type": true,
               "department": true,
+              "error_type": true,
               "event_name": true,
               "host_arch": true,
-              "id": true,
-              "labels": true,
               "level": true,
               "observed_timestamp": true,
               "organization_id": true,
@@ -1084,271 +1075,435 @@
               "team_id": true,
               "terminal_type": true,
               "tool_input": true,
+              "tool_input_size_bytes": true,
               "tool_parameters": true,
               "tool_result_size_bytes": true,
-              "tsNs": true,
+              "trace_id": true,
               "user_account_id": true,
               "user_account_uuid": true,
               "user_email": true,
-              "user_id": true
+              "user_id": true,
+              "success": true
             },
             "indexByName": {
-              "duration_ms": 3,
               "event_timestamp": 0,
-              "success": 2,
               "tool_name": 1,
-              "session_id": 4,
-              "prompt_id": 5,
-              "error_type": 7,
-              "error": 8
+              "error": 2,
+              "duration_ms": 3,
+              "prompt_id": 4,
+              "session_id": 5
             }
           }
         }
-      ],
-      "type": "table",
-      "description": "Use these rows to jump straight into prompt or session detail for the suspicious tool execution."
+      ]
     },
     {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
+      "id": 40,
+      "type": "table",
+      "title": "Repeated File Edits",
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 12,
         "x": 0,
-        "y": 29
+        "y": 35
       },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.4.2",
-      "targets": [
-        {
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "sum by (tool_name, decision) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_decision` [5m]))",
-          "instant": true,
-          "legendFormat": "{{tool_name}} ({{decision}})",
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "title": "Decision Distribution over Time",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 29
-      },
-      "id": 8,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.4.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (language, tool_name) (increase(claude_code_code_edit_tool_decision_total{user_email=~\"($user_email|unknown)\"}[5m]))",
-          "instant": false,
-          "legendFormat": "{{language}} ({{tool_name}})",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Code Edit by Language",
-      "type": "timeseries"
-    },
-    {
       "datasource": {
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (file) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write` | line_format `{{.tool_input}}` | regexp `\"file_path\":\\s*\"(?P<file>[^\"]+)\"` [$__range]))",
+          "legendFormat": "{{file}}",
+          "instant": true
+        }
+      ],
       "fieldConfig": {
         "defaults": {
           "custom": {
             "align": "center",
-            "cellOptions": {
-              "type": "auto"
-            },
             "filterable": true,
-            "footer": {
-              "reducers": []
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
+            "inspect": true
           }
         },
         "overrides": [
           {
             "matcher": {
               "id": "byName",
-              "options": "event_timestamp"
+              "options": "file"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Time"
+                "value": "File"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
               },
               {
                 "id": "custom.width",
-                "value": 180
+                "value": 620
               }
             ]
           },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Edit Count"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "transparent",
+                      "value": null
+                    },
+                    {
+                      "color": "dark-yellow",
+                      "value": 2
+                    },
+                    {
+                      "color": "dark-orange",
+                      "value": 4
+                    },
+                    {
+                      "color": "dark-red",
+                      "value": 8
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Edit Count",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ]
+        }
+      },
+      "description": "Files edited/written more than once in scope, parsed from tool_input file_path. Repeated rewrites of one file can signal churn. Use the Edit Count filter (>1) to focus on hotspots.",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "file": 0
+            }
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "all",
+            "filters": [
+              {
+                "fieldName": "Value #A",
+                "config": {
+                  "id": "greater",
+                  "options": {
+                    "value": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "type": "table",
+      "title": "Edit/Write Count by Tool (fallback)",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (tool_name) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | event_name = `tool_result` | tool_name =~ `Edit|Write|MultiEdit|NotebookEdit` [$__range]))",
+          "legendFormat": "{{tool_name}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "filterable": true,
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tool_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Edit Tool"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              },
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Executions"
+              },
+              {
+                "id": "custom.width",
+                "value": 140
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Executions",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [
+            "Value #A"
+          ]
+        }
+      },
+      "description": "Per-tool edit volume. Kept as a simple companion to Repeated File Edits in case the file_path parse returns nothing for the current scope.",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "tool_name": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "type": "table",
+      "title": "Code Edit Decisions by Language (account-level)",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 44
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (language, decision) (increase(claude_code_code_edit_tool_decision_total{exported_job=~\"$service\"}[$__range]))",
+          "legendFormat": "{{language}} ({{decision}})",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "filterable": true,
+            "inspect": true
+          },
+          "unit": "short",
+          "decimals": 1
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "language"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Language"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              },
+              {
+                "id": "custom.width",
+                "value": 240
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "decision"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Decision"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Edits"
+              },
+              {
+                "id": "custom.width",
+                "value": 140
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Edits",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [
+            "Value #A"
+          ]
+        }
+      },
+      "description": "Code edits split by language and decision (Prometheus claude_code_code_edit_tool_decision_total). Only decision=accept is emitted by this build. This metric has no session/prompt scope, so it is account-level and ignores the Session/Prompt/Tool filters.",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "language": 0,
+              "decision": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "type": "table",
+      "title": "Code Edit Decisions by Tool (account-level)",
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 12,
+        "y": 44
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (tool_name) (increase(claude_code_code_edit_tool_decision_total{exported_job=~\"$service\"}[$__range]))",
+          "legendFormat": "{{tool_name}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "filterable": true,
+            "inspect": true
+          },
+          "unit": "short",
+          "decimals": 1
+        },
+        "overrides": [
           {
             "matcher": {
               "id": "byName",
@@ -1360,203 +1515,452 @@
                 "value": "Tool"
               },
               {
+                "id": "custom.align",
+                "value": "left"
+              },
+              {
                 "id": "custom.width",
                 "value": 140
-              },
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Filter Tool Investigation by tool",
-                    "url": "/d/cc-tool-analytics?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${__value.text}&${__url_time_range}",
-                    "targetBlank": false
-                  }
-                ]
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "success"
+              "options": "Value #A"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Success"
+                "value": "Edits"
               },
               {
                 "id": "custom.width",
-                "value": 80
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "duration_ms"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Duration (ms)"
-              },
-              {
-                "id": "custom.width",
-                "value": 110
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "prompt_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Open Prompt Detail",
-                    "url": "/d/cc-prompt-detail?var-user_email=${user_email}&var-session_id=${__data.fields.session_id}&var-prompt_id=${__value.text}&${__url_time_range}",
-                    "targetBlank": false
-                  }
-                ]
-              },
-              {
-                "id": "displayName",
-                "value": "Prompt ID"
-              },
-              {
-                "id": "custom.width",
-                "value": 170
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "session_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Open Session Explorer",
-                    "url": "/d/cc-session-explorer?var-user_email=${user_email}&var-session_id=${__value.text}&var-prompt_id=${__data.fields.prompt_id}&${__url_time_range}",
-                    "targetBlank": false
-                  }
-                ]
-              },
-              {
-                "id": "displayName",
-                "value": "Session ID"
-              },
-              {
-                "id": "custom.width",
-                "value": 170
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "error_type"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Error Type"
+                "value": 120
               }
             ]
           }
         ]
       },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 37
-      },
-      "id": 9,
       "options": {
-        "cellHeight": "sm",
         "showHeader": true,
         "sortBy": [
           {
-            "desc": true,
-            "displayName": "Time"
+            "displayName": "Edits",
+            "desc": true
           }
-        ]
-      },
-      "pluginVersion": "12.4.2",
-      "targets": [
-        {
-          "expr": "{service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result`",
-          "refId": "A"
+        ],
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ]
         }
-      ],
-      "title": "Tool Result Detail",
+      },
+      "description": "Code edits split by edit tool (Prometheus). Account-level: no session/prompt scope.",
       "transformations": [
-        {
-          "id": "extractFields",
-          "options": {
-            "format": "auto",
-            "source": "labels"
-          }
-        },
         {
           "id": "organize",
           "options": {
             "excludeByName": {
-              "Line": true,
-              "Time": true,
-              "__error__": true,
-              "__error_details__": true,
-              "app_version": true,
-              "decision_source": true,
-              "decision_type": true,
-              "department": true,
-              "event_name": true,
-              "host_arch": true,
-              "id": true,
-              "labels": true,
-              "level": true,
-              "observed_timestamp": true,
-              "organization_id": true,
-              "os_type": true,
-              "os_version": true,
-              "scope_name": true,
-              "scope_version": true,
-              "service_name": true,
-              "service_version": true,
-              "team_id": true,
-              "terminal_type": true,
-              "tool_input": true,
-              "tool_parameters": true,
-              "tool_result_size_bytes": true,
-              "tsNs": true,
-              "user_account_id": true,
-              "user_account_uuid": true,
-              "user_email": true,
-              "user_id": true
+              "Time": true
             },
             "indexByName": {
-              "duration_ms": 3,
-              "event_timestamp": 0,
-              "success": 2,
-              "tool_name": 1,
-              "session_id": 4,
-              "prompt_id": 5,
-              "error_type": 7,
-              "error": 8
+              "tool_name": 0
             }
           }
         }
-      ],
+      ]
+    },
+    {
+      "id": 52,
       "type": "table",
-      "description": "Raw tool rows stay below the funnel and slow-run summary so you can keep the causal story in view."
+      "title": "Decision Source Mix",
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 18,
+        "y": 44
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (decision_source) (count_over_time({service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result` [$__range]))",
+          "legendFormat": "{{decision_source}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "filterable": true,
+            "inspect": true
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "decision_source"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Decision Source"
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              },
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Executions"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Executions",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [
+            "Value #A"
+          ]
+        }
+      },
+      "description": "How tool executions were approved: config (auto-approved) vs user_temporary (a one-time user grant). Only these two values appear in this build.",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "decision_source": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 800,
+      "type": "row",
+      "title": "Raw detail",
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "panels": [
+        {
+          "id": 801,
+          "type": "table",
+          "title": "Tool Result Detail",
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 54
+          },
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "{service_name=~\"$service\"} | session_id=~\"$session_id\" | prompt_id=~\"$prompt_id\" | tool_name=~\"$tool_name\" | event_name = `tool_result`"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "center",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": true,
+                "inspect": false
+              },
+              "mappings": []
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "event_timestamp"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Time"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 180
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "tool_name"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Tool"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  },
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "title": "Filter by this tool",
+                        "url": "/d/cc-tool-analytics?var-service=${service}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-tool_name=${__value.text}&${__url_time_range}",
+                        "targetBlank": false
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "success"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Success"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 90
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "error"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Error"
+                  },
+                  {
+                    "id": "custom.align",
+                    "value": "left"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 380
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "duration_ms"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Duration (ms)"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "ms"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "decision_source"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Decision Source"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 150
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "prompt_id"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Prompt ID"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 200
+                  },
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "title": "Open Entity Detail",
+                        "url": "/d/cc-session-explorer?var-service=${service}&var-session_id=${__data.fields.session_id}&var-prompt_id=${__value.text}&${__url_time_range}",
+                        "targetBlank": false
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "session_id"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Session ID"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 200
+                  },
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "title": "Open Entity Detail",
+                        "url": "/d/cc-session-explorer?var-service=${service}&var-session_id=${__value.text}&var-prompt_id=${__data.fields.prompt_id}&${__url_time_range}",
+                        "targetBlank": false
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "options": {
+            "cellHeight": "sm",
+            "showHeader": true,
+            "sortBy": [
+              {
+                "displayName": "Time",
+                "desc": true
+              }
+            ]
+          },
+          "pluginVersion": "12.4.2",
+          "description": "Single raw tool_result feed (replaces the two duplicate raw tables). Columns: Time, Tool, Success, Error, Duration, Decision Source, Prompt, Session. Click a Session/Prompt to open Entity Detail.",
+          "transformations": [
+            {
+              "id": "extractFields",
+              "options": {
+                "format": "auto",
+                "source": "labels"
+              }
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Line": true,
+                  "Time": true,
+                  "id": true,
+                  "labels": true,
+                  "tsNs": true,
+                  "__error__": true,
+                  "__error_details__": true,
+                  "app_version": true,
+                  "decision_type": true,
+                  "department": true,
+                  "error_type": true,
+                  "event_name": true,
+                  "host_arch": true,
+                  "level": true,
+                  "observed_timestamp": true,
+                  "organization_id": true,
+                  "os_type": true,
+                  "os_version": true,
+                  "scope_name": true,
+                  "scope_version": true,
+                  "service_name": true,
+                  "service_version": true,
+                  "team_id": true,
+                  "terminal_type": true,
+                  "tool_input": true,
+                  "tool_input_size_bytes": true,
+                  "tool_parameters": true,
+                  "tool_result_size_bytes": true,
+                  "trace_id": true,
+                  "user_account_id": true,
+                  "user_account_uuid": true,
+                  "user_email": true,
+                  "user_id": true
+                },
+                "indexByName": {
+                  "event_timestamp": 0,
+                  "tool_name": 1,
+                  "success": 2,
+                  "error": 3,
+                  "duration_ms": 4,
+                  "decision_source": 5,
+                  "prompt_id": 6,
+                  "session_id": 7
+                }
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

@@ -6,6 +6,24 @@
 
 ---
 
+## 0. 라이브 검증 정정 (2026-06-04)
+
+> 이 문서의 아래 분석(2026-04-12)은 **공식 스키마와 대시보드 가정**에 기반했다. 2026-06-04 에 14일치 라이브 데이터(Loki/Prometheus/Tempo, claude-code v2.1.162)를 직접 질의해 검증한 결과, 핵심 전제 몇 가지가 사실과 달랐다. **아래 정정이 6장·7장의 우선순위보다 우선한다.**
+
+| 이 문서의 전제 | 라이브 사실 | 조치 |
+|---|---|---|
+| `api_error` 이벤트로 오류율 측정 (P0) | **api_error 0건. 발생하지 않음.** api_request에 status_code/error/attempt/retry 전무 | 모든 api_error 패널·알림 제거. 신뢰성은 **`tool_result success=false`(≈2.6%, 실제 `error` 텍스트)** 로 측정 |
+| User 필터로 사용자별 분석 | **로그 `user_email`/`user_id` 전부 `unknown`** (실값은 Prometheus·`user_account_id`에만) | User 필터 제거(단일 사용자). 멀티유저는 `user_account_id`로 |
+| `decision_source=user_abort/user_reject` 로 abort/reject canary | 해당 값 **0건** (config·user_temporary만), code-edit `reject`도 0, `speed` 전부 normal | abort/reject·speed canary 제거 |
+| Thinking/트레이스 한계 | **트레이스 실재**(`claude_code.interaction`, span `session.id`), 로그에 `trace_id` | Trace Explorer 유지 + 로그↔트레이스 연결 추가 |
+| 이벤트 5종 | **15종 실재**(compaction·subagent_completed·skill_activated·hook_*·mcp_server_connection·permission_mode_changed·plugin_loaded·at_mention·feedback_survey 추가) | Events Explorer에 전부 노출 |
+
+**재지정된 진짜 canary(실재·비0·미사용이던 신호):** 툴 실패율(`tool_result success=false`), cache 효율(`cache_read/(cache_read+input+cache_creation)`), **서브에이전트 비용 비중**(로그 `query_source=~"agent:.*"` ≈26% / Prometheus `query_source=subagent`), `effort`(xhigh/max/high) 분포, `agent_name`별 비용, `model`×`service_version` 회귀, 반복 파일 편집(`tool_input` 파싱). 이 신호들로 2026-06-04 재설계를 진행했다(대시보드 8→6종, Loki 인덱스·alerting·notification policy 정비).
+
+Loki 쿼리 규칙: `service_name`만 인덱스 라벨, 나머지는 structured metadata → `{service_name=~"$service"} | event_name = "..."`. 숫자 필드는 문자열 → `| unwrap`.
+
+---
+
 ## 1. 이슈 요약
 
 ### 핵심 주장

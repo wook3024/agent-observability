@@ -77,20 +77,24 @@ docker compose down -v
 
 ## Grafana 대시보드
 
-대시보드 묶음은 `Executive Overview -> Investigation Hub -> Entity Detail` 흐름으로 구성되어 있습니다.
+대시보드는 `Overview -> Investigation -> Detail` 흐름의 **6종**으로 구성되어 있습니다. 모든 패널은 14일치 라이브 데이터에서 실제로 채워지는 필드만 사용합니다.
 
 | 레이어 | 대시보드 | UID | 설명 |
 |--------|----------|-----|------|
-| Executive Overview | Executive Overview | `cc-overview` | 비용, 세션, 지연, 도구 성공률을 먼저 보고 다음 조사 대상을 고르는 진입점 |
-| Investigation Hub | API Requests | `cc-api-requests` | request volume, 비용, p95 latency, `api_error` 기반 오류 분해, 느린 요청/오류 상세 |
-| Investigation Hub | Tool Analytics | `cc-tool-analytics` | tool decision/execution/success funnel, canary stat, 느린 실행, raw tool detail |
-| Investigation Hub | Events Explorer | `cc-events-explorer` | event filter 기반 타임라인, `api_error` 포함 event investigation queue, raw event stream |
-| Investigation Hub | Prompt Analytics | `cc-prompt-analytics` | prompt investigation queue, canary column, 최근 user prompt 목록 |
-| Entity Detail | Prompt Detail | `cc-prompt-detail` | 개별 prompt의 summary-first 상세, prompt canary stat, session trace coverage, API/tool/event raw detail |
-| Entity Detail | Session Explorer | `cc-session-explorer` | 세션 단위 여정, prompt journey, API/tool summary, related traces |
-| Entity Detail | Trace Explorer | `cc-trace-explorer` | session-aware trace search, trace timeline, duration distribution |
+| Overview | Executive Overview | `cc-overview` | 진짜 canary(툴 실패율·cache 효율·subagent 비용 비중) + 비용/지연 추세 + 세션 조사 큐. 여기서 다음 조사 대상을 고른다 |
+| Investigation | Activity & Cost | `cc-activity` | 요청/비용/토큰 요약, **effort·query_source(서브에이전트)·model×version** 분해, cache 효율 추세, prompt 조사 큐 |
+| Investigation | Tools & Edits | `cc-tool-analytics` | decision→execution→success 퍼널, **툴 실패(실제 `error` 텍스트)**, Read:Edit·반복 파일 편집, code-edit 결정(Prometheus) |
+| Investigation | Events Explorer | `cc-events-explorer` | **15종 이벤트** 필터·타임라인·조사 큐. 행에서 `trace_id`로 Trace Explorer 연결 |
+| Detail | Entity Detail (Session/Prompt) | `cc-session-explorer` | 세션(선택적으로 프롬프트) 요약·canary·API/tool 요약·세션 트레이스·원시 타임라인 |
+| Detail | Trace Explorer | `cc-trace-explorer` | 세션 단위 trace 검색·타임라인·duration 분포 |
 
 모든 대시보드는 상단 네비게이션 링크로 상호 연결되며, 시간 범위와 공통 변수는 이동 시 유지됩니다.
+
+> **라이브 데이터 기준 주의 (2026-06-04 검증)**
+> - **`api_error` 이벤트는 이 Claude Code 빌드에서 발생하지 않습니다.** API 신뢰성은 `api_error`가 아니라 **도구 실패율(`tool_result | success="false"`, 실제 `error` 텍스트)** 로 추적합니다.
+> - **로그의 `user_email`/`user_id`는 항상 `unknown`** 입니다(실제 식별자는 Prometheus 라벨·로그의 `user_account_id`에만). 따라서 대시보드에 **User 필터가 없습니다**(사실상 단일 사용자). 다사용자로 확장하려면 OTEL 측에서 사용자 메타데이터를 채우거나 `user_account_id` 기준으로 전환하세요.
+> - **트레이스는 실재합니다**(`claude_code.interaction` 루트, span별 `session.id`). 로그에도 `trace_id`가 있어 로그↔트레이스 상호 연결이 가능합니다.
+> - Loki에서 `service_name`만 인덱스 라벨이고 나머지(`event_name`, `tool_name`, `model`, `session_id` 등)는 structured metadata이므로 `{service_name=~"$service"} | event_name = "..."` 형태로 조회합니다.
 
 ## Codex CLI 대시보드
 
@@ -110,28 +114,30 @@ docker compose down -v
 
 ## 공통 조사 필터
 
-주요 대시보드는 **User -> Session -> Prompt -> Tool / Model / Event** 흐름의 공통 필터를 공유합니다.
+주요 대시보드는 **Service -> Session -> Prompt -> Tool / Model / Event** 흐름의 공통 필터를 공유합니다.
 
-- **User**: Prometheus의 `user_email` 레이블에서 동적으로 조회됩니다.
-- **Session / Prompt / Tool / Model**: Loki 로그에서 현재 범위에 존재하는 값으로 동적으로 좁혀집니다.
-- **Event**: `api_request`, `api_error`, `tool_result`, `tool_decision`, `user_prompt` 필터를 공통 event 축으로 사용합니다.
-- 대시보드 첫 진입 시에는 첫 번째 사용자 값이 기본 선택되고, 나머지 필터는 기본적으로 `All` 상태로 시작합니다.
-- 표의 `Prompt ID`, `Session ID`, `Tool`, `Model`, `Event` 컬럼은 drilldown link를 포함하므로 수동 ID 입력 없이 상세 화면으로 이동할 수 있습니다.
-- Trace Explorer는 `session.id` span attribute를 이용해 세션 단위 trace correlation을 지원합니다.
+- **Service**: `claude-code` / `claude-code-desktop` / 둘 다(`claude-code.*`) 중 선택. 기본 `claude-code`.
+- **Session / Prompt / Tool / Model**: Loki 로그에서 현재 범위에 존재하는 값으로 동적으로 좁혀집니다(structured metadata).
+- **Event**: 15종 이벤트(`api_request`, `tool_result`, `tool_decision`, `user_prompt`, `compaction`, `subagent_completed`, `skill_activated`, `hook_*`, `mcp_server_connection`, `permission_mode_changed`, `plugin_loaded`, `at_mention`, `feedback_survey`)를 공통 event 축으로 사용합니다.
+- **User 필터는 없습니다.** 로그의 `user_email`이 항상 `unknown`이라 무의미하기 때문입니다. 멀티유저 환경에서는 `user_account_id` 기반으로 전환하세요.
+- 표의 `Session ID`, `Prompt ID`, `Tool`, `Model`, `Trace` 컬럼은 drilldown link를 포함하므로 수동 ID 입력 없이 상세 화면으로 이동할 수 있습니다.
+- Events Explorer / Entity Detail의 `Trace` 컬럼과 Trace Explorer는 `trace_id` / `session.id`로 로그↔트레이스를 연결합니다.
 
 ## Grafana Alerting
 
-기본 canary alert rule도 함께 provision 됩니다.
+canary alert rule이 provision 됩니다. 모든 규칙은 라이브에서 실제로 비0인 신호만 사용합니다. **알림 전송(contact point / notification policy)은 기본적으로 비활성화** 되어 있습니다 — 규칙은 평가/표시되지만 실제 알림은 전송되지 않습니다.
 
 - 규칙 파일: [grafana/provisioning/alerting/claude-code-canary-rules.yml](grafana/provisioning/alerting/claude-code-canary-rules.yml)
-- 기본 룰 그룹: `claude-code-canary`
+- 알림 경로 파일: [grafana/provisioning/alerting/notifications.yml](grafana/provisioning/alerting/notifications.yml)
+- 룰 그룹: `claude-code-canary`
 - 포함된 경보:
-  - `Claude Code API Error Rate Elevated`
-  - `Claude Code Abort Reject Rate Elevated`
-  - `Claude Code Write Share Elevated`
+  - `Claude Code Tool Failure Rate Elevated` — `tool_result success=false` 비율 > 15% (baseline ≈ 2.6%)
+  - `Claude Code Write Share Elevated` — `Write / (Edit|Write)` > 60%
+  - `Claude Code Subagent Cost Share Elevated` — Prometheus `query_source=subagent` 비용 비중 > 50% (baseline ≈ 26%)
 
-현재 저장소에는 contact point / notification policy provisioning은 포함하지 않았습니다.
-따라서 alert rule은 자동 생성되지만, 실제 알림 전송은 Grafana UI의 `Alerting` 메뉴에서 contact point와 routing policy를 별도로 연결해야 합니다.
+> 구버전의 `API Error Rate` / `Abort Reject Rate` 규칙은 제거했습니다. `api_error`와 `user_abort/user_reject`가 발생하지 않아 **항상 0인 죽은 규칙**이었습니다.
+
+알림을 활성화하려면 [grafana/provisioning/alerting/notifications.yml](grafana/provisioning/alerting/notifications.yml)의 주석 처리된 `contactPoints`/`policies` 블록을 해제하고 `settings.url`을 본인 Slack/Discord/사내 webhook 주소로 교체한 뒤 Grafana를 재기동하세요.
 
 ## Claude Code OTEL 환경변수
 
