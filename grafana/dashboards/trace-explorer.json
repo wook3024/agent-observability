@@ -1,6 +1,6 @@
 {
   "uid": "cc-trace-explorer",
-  "title": "Claude Code - Entity Detail: Trace",
+  "title": "Claude Code - Trace Explorer",
   "tags": [
     "claude-code",
     "trace",
@@ -10,7 +10,7 @@
   "schemaVersion": 39,
   "editable": true,
   "graphTooltip": 1,
-  "refresh": "",
+  "refresh": "1m",
   "time": {
     "from": "now-6h",
     "to": "now"
@@ -34,7 +34,7 @@
   },
   "links": [
     {
-      "title": "Executive Overview",
+      "title": "Overview",
       "url": "/d/cc-overview",
       "type": "link",
       "icon": "external link",
@@ -43,8 +43,8 @@
       "includeVars": true
     },
     {
-      "title": "API Investigation",
-      "url": "/d/cc-api-requests",
+      "title": "Activity & Cost",
+      "url": "/d/cc-activity",
       "type": "link",
       "icon": "external link",
       "targetBlank": false,
@@ -52,7 +52,7 @@
       "includeVars": true
     },
     {
-      "title": "Tool Investigation",
+      "title": "Tools & Edits",
       "url": "/d/cc-tool-analytics",
       "type": "link",
       "icon": "external link",
@@ -61,7 +61,7 @@
       "includeVars": true
     },
     {
-      "title": "Events Investigation",
+      "title": "Events Explorer",
       "url": "/d/cc-events-explorer",
       "type": "link",
       "icon": "external link",
@@ -70,8 +70,8 @@
       "includeVars": true
     },
     {
-      "title": "Prompt Investigation",
-      "url": "/d/cc-prompt-analytics",
+      "title": "Entity Detail",
+      "url": "/d/cc-session-explorer",
       "type": "link",
       "icon": "external link",
       "targetBlank": false,
@@ -79,8 +79,8 @@
       "includeVars": true
     },
     {
-      "title": "Session Explorer",
-      "url": "/d/cc-session-explorer",
+      "title": "Trace Explorer",
+      "url": "/d/cc-trace-explorer",
       "type": "link",
       "icon": "external link",
       "targetBlank": false,
@@ -91,23 +91,35 @@
   "templating": {
     "list": [
       {
-        "name": "user_email",
-        "label": "User",
-        "type": "query",
-        "datasource": {
-          "type": "prometheus",
-          "uid": "PBFA97CFB590B2093"
-        },
-        "definition": "label_values(claude_code_session_count_total, user_email)",
-        "query": "label_values(claude_code_session_count_total, user_email)",
-        "refresh": 1,
-        "sort": 1,
+        "name": "service",
+        "label": "Service",
+        "type": "custom",
+        "query": "claude-code,claude-code-desktop,claude-code.*",
         "includeAll": false,
-        "allValue": ".*",
         "multi": false,
         "hide": 0,
-        "current": {},
-        "options": []
+        "current": {
+          "text": "claude-code",
+          "value": "claude-code",
+          "selected": true
+        },
+        "options": [
+          {
+            "text": "claude-code",
+            "value": "claude-code",
+            "selected": true
+          },
+          {
+            "text": "claude-code-desktop",
+            "value": "claude-code-desktop",
+            "selected": false
+          },
+          {
+            "text": "both",
+            "value": "claude-code.*",
+            "selected": false
+          }
+        ]
       },
       {
         "name": "session_id",
@@ -117,8 +129,8 @@
           "type": "loki",
           "uid": "P8E80F9AEF21F6940"
         },
-        "definition": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
-        "query": "query_result(sum by (session_id) (count_over_time({service_name=\"claude-code\"} | user_email=~\"($user_email|unknown)\" | session_id =~ \".+\" [$__range])))",
+        "definition": "query_result(sum by (session_id) (count_over_time({service_name=~\"$service\"} | session_id =~ \".+\" [$__range])))",
+        "query": "query_result(sum by (session_id) (count_over_time({service_name=~\"$service\"} | session_id =~ \".+\" [$__range])))",
         "refresh": 2,
         "sort": 1,
         "includeAll": true,
@@ -131,18 +143,6 @@
           "text": "All",
           "value": ".*",
           "selected": true
-        }
-      },
-      {
-        "name": "prompt_id",
-        "label": "Prompt",
-        "type": "textbox",
-        "hide": 2,
-        "query": "",
-        "options": [],
-        "current": {
-          "text": ".*",
-          "value": ".*"
         }
       },
       {
@@ -218,7 +218,7 @@
         "y": 0
       },
       "options": {
-        "content": "### Trace Explorer\nTrace search is now **session-aware**. Start here from Session Explorer or Prompt Detail, use the `Session` variable to narrow the search, and only paste a trace ID when you want a specific timeline. Summary stats and the histogram reuse the same Trace List result set to avoid duplicate search queries.",
+        "content": "### Trace Explorer\nTrace search is **session-aware**. Arrive here from **Entity Detail** with `Service`/`Session` already scoped, or narrow the `Session` variable directly. The **Trace List** is the source of truth — its result set also feeds the summary stat and the Duration Distribution histogram, so there is only one Tempo search. **Click a `traceID`** in the list to load its **Trace Timeline** below (the timeline stays empty until you select or paste a trace ID — a blank ID is harmless). Spans here carry no `user.email` (single-user stack), so there is no User filter; scope is `Service` + `Session` only.",
         "mode": "markdown"
       }
     },
@@ -228,7 +228,7 @@
       "title": "Trace Samples",
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 12,
         "x": 0,
         "y": 3
       },
@@ -286,68 +286,7 @@
         "justifyMode": "auto",
         "textMode": "auto"
       },
-      "description": "Shared-query count of trace rows in the current search result.",
-      "transformations": [
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "traceDuration"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "type": "stat",
-      "title": "Sample Avg Duration",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 3
-      },
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "panelId": 5,
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "ms",
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "blue"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "Average trace duration across the current Trace List sample.",
+      "description": "Number of traces in the current Trace List result (shared query, no extra Tempo search). Reflects the Service/Session/Min Duration scope.",
       "transformations": [
         {
           "id": "filterFieldsByName",
@@ -364,75 +303,11 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "Error Trace Samples",
+      "title": "Avg Trace Duration",
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 12,
         "x": 12,
-        "y": 3
-      },
-      "datasource": {
-        "type": "tempo",
-        "uid": "P214B5B846CF3925F"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "tempo",
-            "uid": "P214B5B846CF3925F"
-          },
-          "queryType": "traceql",
-          "query": "{resource.service.name=\"claude-code\" && span.\"user.email\" =~ \"($user_email|unknown)\" && span.\"session.id\" =~ \"$session_id\" && trace:duration > ${trace_min_duration} && status = error}",
-          "tableType": "traces",
-          "limit": 500,
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "blue"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "count"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto"
-      },
-      "description": "Error traces in the same user/session search window.",
-      "transformations": [
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "traceID"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "type": "stat",
-      "title": "Sample Max Duration",
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
         "y": 3
       },
       "datasource": {
@@ -454,15 +329,32 @@
           "unit": "ms",
           "color": {
             "mode": "fixed",
-            "fixedColor": "blue"
+            "fixedColor": "purple"
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traceDuration"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Avg Duration"
+              },
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "reduceOptions": {
           "calcs": [
-            "max"
+            "mean"
           ],
           "fields": "",
           "values": false
@@ -472,7 +364,7 @@
         "justifyMode": "auto",
         "textMode": "auto"
       },
-      "description": "Longest trace in the current Trace List sample.",
+      "description": "Mean duration of the traces in the current Trace List scope (shared query with the list, no extra Tempo search).",
       "transformations": [
         {
           "id": "filterFieldsByName",
@@ -507,7 +399,7 @@
             "uid": "P214B5B846CF3925F"
           },
           "queryType": "traceql",
-          "query": "{resource.service.name=\"claude-code\" && span.\"user.email\" =~ \"($user_email|unknown)\" && span.\"session.id\" =~ \"$session_id\" && trace:duration > ${trace_min_duration}}",
+          "query": "{ resource.service.name=~\"$service\" && span.session.id=~\"$session_id\" && trace:duration > ${trace_min_duration} }",
           "tableType": "traces",
           "limit": 50,
           "refId": "A"
@@ -526,13 +418,13 @@
                 "id": "links",
                 "value": [
                   {
-                    "title": "Open Trace Detail",
-                    "url": "/d/cc-trace-explorer?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&var-trace_id=${__value.raw}&var-trace_min_duration=${trace_min_duration}&${__url_time_range}",
+                    "title": "Load Trace Timeline (below)",
+                    "url": "/d/cc-trace-explorer?var-service=${service}&var-session_id=${session_id}&var-trace_id=${__value.raw}&var-trace_min_duration=${trace_min_duration}&${__url_time_range}",
                     "targetBlank": false
                   },
                   {
-                    "title": "Open Session Explorer",
-                    "url": "/d/cc-session-explorer?var-user_email=${user_email}&var-session_id=${session_id}&var-prompt_id=${prompt_id}&${__url_time_range}",
+                    "title": "Open Entity Detail",
+                    "url": "/d/cc-session-explorer?var-service=${service}&var-session_id=${session_id}&${__url_time_range}",
                     "targetBlank": false
                   }
                 ]
@@ -587,13 +479,13 @@
         }
       },
       "transformations": [],
-      "description": "Select a trace from the current user/session search result. This panel acts as the shared source query for the summary stats and histogram below."
+      "description": "Traces for the current Service/Session search. Click a traceID to load its timeline below, or jump to Entity Detail. This panel is the shared source query for the summary stat and the histogram."
     },
     {
       "id": 6,
       "type": "traces",
       "title": "Trace Timeline",
-      "description": "Select a trace above or paste a Trace ID if you already know it.",
+      "description": "Empty until a trace is selected. Click a traceID in the Trace List above (sets the Trace ID variable) or paste one into the Trace ID textbox. A blank Trace ID renders an empty panel and does not error.",
       "gridPos": {
         "h": 16,
         "w": 24,
@@ -664,6 +556,7 @@
           "sort": "none"
         }
       },
+      "description": "Distribution of trace durations across the current Trace List sample (shared query, no extra Tempo search).",
       "transformations": [
         {
           "id": "filterFieldsByName",

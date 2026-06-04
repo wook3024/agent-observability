@@ -1,0 +1,38 @@
+apiVersion: 1
+
+# Claude Code canary 알림의 전송 경로(contact point + notification policy).
+#
+# 기존에는 alert rule 만 provision 되고 contact point / policy 가 없어서
+# 규칙이 발화해도 "어디로도 전송되지 않는" 상태였다. 이 파일이 그 경로를 연결한다.
+#
+# ⚠️ 아래 webhook URL 은 placeholder 다. 실제로 알림을 받으려면
+#    settings.url 을 본인 Slack Incoming Webhook / Discord / 사내 webhook 주소로 교체하라.
+#    (Slack 권장: https://api.slack.com/messaging/webhooks 에서 발급한 URL)
+
+contactPoints:
+  - orgId: 1
+    name: cc-default
+    receivers:
+      - uid: cc-default-webhook
+        type: webhook
+        settings:
+          url: https://example.com/REPLACE-WITH-YOUR-WEBHOOK-URL
+          httpMethod: POST
+        disableResolveMessage: false
+
+policies:
+  - orgId: 1
+    receiver: cc-default
+    group_by:
+      - grafana_folder
+      - alertname
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
+    routes:
+      - receiver: cc-default
+        matchers:
+          - team = observability
+        group_by:
+          - alertname
+          - signal

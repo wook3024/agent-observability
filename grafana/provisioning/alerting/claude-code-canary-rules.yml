@@ -1,13 +1,29 @@
 apiVersion: 1
 
+# 구버전 죽은 규칙 제거(파일에서 빼는 것만으로는 Grafana가 삭제하지 않으므로 명시적으로 deleteRules 사용).
+deleteRules:
+  - orgId: 1
+    uid: cc-api-error-rate
+  - orgId: 1
+    uid: cc-abort-reject-rate
+
+# Claude Code canary 알림 규칙.
+#
+# 모든 규칙은 14일치 라이브 데이터에서 실재하고 비0(non-zero)인 신호만 사용한다.
+# (구버전의 cc-api-error-rate / cc-abort-reject-rate 는 제거했다 —
+#  api_error 이벤트는 발생하지 않고, user_abort/user_reject 도 0건이라 항상 0인 죽은 규칙이었다.)
+#
+# 알림 전송 경로는 notifications.yml 의 contact point / notification policy 로 연결된다.
+
 groups:
   - orgId: 1
     name: claude-code-canary
     folder: Claude Code Canary
     interval: 5m
     rules:
-      - uid: cc-api-error-rate
-        title: Claude Code API Error Rate Elevated
+      # 1) 도구 실행 실패율 (실재 신호: tool_result success=false, baseline ≈ 2.6%)
+      - uid: cc-tool-failure-rate
+        title: Claude Code Tool Failure Rate Elevated
         condition: C
         data:
           - refId: A
@@ -20,7 +36,7 @@ groups:
                 type: loki
                 uid: P8E80F9AEF21F6940
               editorMode: code
-              expr: ((sum(count_over_time({service_name="claude-code"} | event_name = `api_error` [15m])) / sum(count_over_time({service_name="claude-code"} | event_name = `api_request` [15m]))) * 100) or vector(0)
+              expr: ((sum(count_over_time({service_name="claude-code"} | event_name = `tool_result` | success = `false` [15m])) / sum(count_over_time({service_name="claude-code"} | event_name = `tool_result` [15m]))) * 100) or vector(0)
               instant: true
               intervalMs: 1000
               maxDataPoints: 43200
@@ -35,7 +51,7 @@ groups:
               conditions:
                 - evaluator:
                     params:
-                      - 2
+                      - 15
                     type: gt
                   operator:
                     type: and
@@ -57,75 +73,16 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
-          summary: API 오류율이 최근 15분 기준 2%를 초과했습니다.
-          description: api_error / api_request 비율 기반 canary입니다. API Requests와 Events Explorer에서 오류 유형과 모델 분해를 확인하세요.
-          runbook_url: /d/cc-api-requests
+          summary: 도구 실행 실패율이 최근 15분 기준 15%를 초과했습니다.
+          description: tool_result success=false / 전체 tool_result 비율 기반 canary입니다 (baseline ≈ 2.6%). Tools & Edits 대시보드의 "Tool Failures by Tool"에서 실패한 도구와 error 메시지를 확인하세요.
+          runbook_url: /d/cc-tool-analytics
         labels:
           severity: warning
-          signal: api_error_rate
+          signal: tool_failure_rate
           team: observability
         isPaused: false
 
-      - uid: cc-abort-reject-rate
-        title: Claude Code Abort Reject Rate Elevated
-        condition: C
-        data:
-          - refId: A
-            relativeTimeRange:
-              from: 900
-              to: 0
-            datasourceUid: P8E80F9AEF21F6940
-            model:
-              datasource:
-                type: loki
-                uid: P8E80F9AEF21F6940
-              editorMode: code
-              expr: ((sum(count_over_time({service_name="claude-code"} | event_name = `tool_result` | decision_source =~ `user_abort|user_reject` [15m])) / sum(count_over_time({service_name="claude-code"} | event_name = `tool_result` [15m]))) * 100) or vector(0)
-              instant: true
-              intervalMs: 1000
-              maxDataPoints: 43200
-              queryType: instant
-              refId: A
-          - refId: C
-            relativeTimeRange:
-              from: 0
-              to: 0
-            datasourceUid: __expr__
-            model:
-              conditions:
-                - evaluator:
-                    params:
-                      - 25
-                    type: gt
-                  operator:
-                    type: and
-                  query:
-                    params:
-                      - A
-                  reducer:
-                    type: last
-                  type: query
-              datasource:
-                type: __expr__
-                uid: __expr__
-              expression: A
-              intervalMs: 1000
-              maxDataPoints: 43200
-              refId: C
-              type: classic_conditions
-        noDataState: NoData
-        execErrState: Error
-        for: 15m
-        annotations:
-          summary: 사용자 abort/reject 비율이 최근 15분 기준 25%를 초과했습니다.
-          description: 도구 실행 중 사용자 개입이 급증했습니다. Overview와 Prompt Analytics에서 특정 프롬프트/세션을 먼저 좁혀 보세요.
-          runbook_url: /d/cc-overview
-        labels:
-          severity: warning
-          signal: abort_reject_rate
-          team: observability
-        isPaused: false
-
+      # 2) Write share (실재 신호: tool_name Write vs Edit|Write) — 재작성 과다 감지
       - uid: cc-write-share
         title: Claude Code Write Share Elevated
         condition: C
@@ -178,10 +135,71 @@ groups:
         for: 15m
         annotations:
           summary: Write share가 최근 15분 기준 60%를 초과했습니다.
-          description: 수정보다 재작성 비중이 높아졌습니다. Tool Analytics와 Prompt Detail에서 rewrite-heavy prompt를 확인하세요.
+          description: 수정(Edit)보다 전체 재작성(Write) 비중이 높아졌습니다. Tools & Edits와 Entity Detail에서 rewrite-heavy 프롬프트를 확인하세요.
           runbook_url: /d/cc-tool-analytics
         labels:
           severity: warning
           signal: write_share
+          team: observability
+        isPaused: false
+
+      # 3) 서브에이전트 비용 비중 (실재 신호: Prometheus query_source=subagent, baseline ≈ 26%)
+      - uid: cc-subagent-cost-share
+        title: Claude Code Subagent Cost Share Elevated
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 3600
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource:
+                type: prometheus
+                uid: PBFA97CFB590B2093
+              editorMode: code
+              expr: ((sum(increase(claude_code_cost_usage_USD_total{query_source="subagent"}[1h])) / sum(increase(claude_code_cost_usage_USD_total[1h]))) * 100) or vector(0)
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 50
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: classic_conditions
+        noDataState: NoData
+        execErrState: Error
+        for: 30m
+        annotations:
+          summary: 서브에이전트 비용 비중이 최근 1시간 기준 50%를 초과했습니다.
+          description: 전체 비용 중 query_source=subagent 비중이 급증했습니다 (baseline ≈ 26%). Activity & Cost의 "Cost by query_source / agent"에서 어떤 에이전트가 비용을 쓰는지 확인하세요.
+          runbook_url: /d/cc-activity
+        labels:
+          severity: warning
+          signal: subagent_cost_share
           team: observability
         isPaused: false

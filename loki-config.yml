@@ -39,7 +39,9 @@ limits_config:
         attributes:
           - user_id
           - user_email
-          - event_name
+      # event_name 은 의도적으로 index_label 에서 제외한다.
+      # 모든 대시보드가 `| event_name = "..."` 파이프라인(structured metadata) 필터로 조회하므로
+      # 인덱스로 승격할 이점이 없고, cardinality 만 늘린다. (README "Codex CLI 대시보드" 주석과 일치)
 
 compactor:
   working_directory: /loki/compactor

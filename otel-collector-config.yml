@@ -47,7 +47,7 @@ service:
       exporters: [prometheus]
     traces:
       receivers: [otlp]
-      processors: [batch]
+      processors: [resource/default-user, batch]
       exporters: [otlp/tempo]
     logs:
       receivers: [otlp]
