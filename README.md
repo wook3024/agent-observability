@@ -125,7 +125,7 @@ docker compose down -v
 
 ## Grafana Alerting
 
-canary alert rule과 전송 경로(contact point / notification policy)가 함께 provision 됩니다. 모든 규칙은 라이브에서 실제로 비0인 신호만 사용합니다.
+canary alert rule이 provision 됩니다. 모든 규칙은 라이브에서 실제로 비0인 신호만 사용합니다. **알림 전송(contact point / notification policy)은 기본적으로 비활성화** 되어 있습니다 — 규칙은 평가/표시되지만 실제 알림은 전송되지 않습니다.
 
 - 규칙 파일: [grafana/provisioning/alerting/claude-code-canary-rules.yml](/Users/shinukyi/Gallary/projects/proto/agent-observability/grafana/provisioning/alerting/claude-code-canary-rules.yml)
 - 알림 경로 파일: [grafana/provisioning/alerting/notifications.yml](/Users/shinukyi/Gallary/projects/proto/agent-observability/grafana/provisioning/alerting/notifications.yml)
@@ -137,7 +137,7 @@ canary alert rule과 전송 경로(contact point / notification policy)가 함�
 
 > 구버전의 `API Error Rate` / `Abort Reject Rate` 규칙은 제거했습니다. `api_error`와 `user_abort/user_reject`가 발생하지 않아 **항상 0인 죽은 규칙**이었습니다.
 
-⚠️ `notifications.yml`의 webhook URL은 **placeholder**입니다. 실제 알림을 받으려면 `settings.url`을 본인 Slack/Discord/사내 webhook 주소로 교체한 뒤 Grafana를 재기동하세요.
+알림을 활성화하려면 [grafana/provisioning/alerting/notifications.yml](/Users/shinukyi/Gallary/projects/proto/agent-observability/grafana/provisioning/alerting/notifications.yml)의 주석 처리된 `contactPoints`/`policies` 블록을 해제하고 `settings.url`을 본인 Slack/Discord/사내 webhook 주소로 교체한 뒤 Grafana를 재기동하세요.
 
 ## Claude Code OTEL 환경변수
 
