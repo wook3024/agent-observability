@@ -51,6 +51,15 @@
       "includeVars": true
     },
     {
+      "title": "Usage Limits",
+      "url": "/d/cc-usage-limits",
+      "type": "link",
+      "icon": "external link",
+      "targetBlank": false,
+      "keepTime": true,
+      "includeVars": true
+    },
+    {
       "title": "Tools & Edits",
       "url": "/d/cc-tool-analytics",
       "type": "link",
